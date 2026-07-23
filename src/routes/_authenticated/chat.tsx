@@ -1,0 +1,117 @@
+import { createFileRoute, Link, Outlet, useMatchRoute, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Plus, Search, Trash2, MessagesSquare, ArrowLeft } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
+
+export const Route = createFileRoute("/_authenticated/chat")({
+  head: () => ({ meta: [{ title: "Chats — FloatingAI" }] }),
+  component: ChatShell,
+});
+
+function ChatShell() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  // If a chat is open (nested route), render only the outlet (chat detail owns full screen).
+  if (pathname !== "/chat") return <Outlet />;
+  return <ChatList />;
+}
+
+function ChatList() {
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const [q, setQ] = useState("");
+
+  const { data: chats = [], isLoading } = useQuery({
+    queryKey: ["chats"],
+    queryFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) return [];
+      const { data, error } = await supabase.from("chats").select("*").eq("user_id", u.user.id).order("updated_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const create = useMutation({
+    mutationFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) throw new Error("Not signed in");
+      const { data, error } = await supabase.from("chats").insert({ user_id: u.user.id, title: "New conversation" }).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (chat) => {
+      qc.invalidateQueries({ queryKey: ["chats"] });
+      navigate({ to: "/chat/$chatId", params: { chatId: chat.id } });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
+  const del = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("chats").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["chats"] }); toast.success("Chat deleted"); },
+  });
+
+  const filtered = q ? chats.filter((c) => c.title.toLowerCase().includes(q.toLowerCase())) : chats;
+
+  return (
+    <div className="flex flex-col gap-4 px-4 pb-8 pt-5">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold tracking-tight">Conversations</h1>
+        <button onClick={() => create.mutate()} className="btn-primary h-10 px-4">
+          <Plus className="h-4 w-4" /> New
+        </button>
+      </div>
+
+      <label className="glass flex items-center gap-2 rounded-2xl px-3 py-2.5">
+        <Search className="h-4 w-4 text-muted-foreground" />
+        <input
+          value={q} onChange={(e) => setQ(e.target.value)}
+          placeholder="Search conversations"
+          className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        />
+      </label>
+
+      {isLoading ? (
+        <div className="mt-8 text-center text-sm text-muted-foreground">Loading…</div>
+      ) : filtered.length === 0 ? (
+        <div className="mt-8 flex flex-col items-center gap-3 text-center">
+          <div className="glass grid h-14 w-14 place-items-center rounded-full"><MessagesSquare className="h-6 w-6 text-primary" /></div>
+          <div className="text-sm font-medium">No conversations yet</div>
+          <p className="max-w-xs text-xs text-muted-foreground">Start a new one — FloatingAI remembers everything.</p>
+          <button onClick={() => create.mutate()} className="btn-primary mt-2 h-10 px-4"><Plus className="h-4 w-4" /> Start chat</button>
+        </div>
+      ) : (
+        <ul className="flex flex-col gap-1.5">
+          {filtered.map((c) => (
+            <li key={c.id} className="glass group flex items-center gap-3 rounded-2xl p-3 transition-transform active:scale-[0.99]">
+              <Link to="/chat/$chatId" params={{ chatId: c.id }} className="flex flex-1 items-center gap-3">
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary/30 to-accent/20">
+                  <MessagesSquare className="h-4 w-4 text-primary" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-[13.5px] font-medium">{c.title}</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {c.mode.toUpperCase()} · {formatDistanceToNow(new Date(c.updated_at), { addSuffix: true })}
+                  </div>
+                </div>
+              </Link>
+              <button
+                onClick={() => { if (confirm("Delete this chat?")) del.mutate(c.id); }}
+                className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground opacity-60 transition-opacity hover:text-destructive hover:opacity-100"
+                aria-label="Delete"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
