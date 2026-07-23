@@ -9,51 +9,46 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
-import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
-import { Route as AuthenticatedImagesRouteImport } from './routes/_authenticated/images'
-import { Route as AuthenticatedPremiumRouteImport } from './routes/_authenticated/premium'
-import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
-import { Route as AuthenticatedResearchRouteImport } from './routes/_authenticated/research'
-import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiGenerateImageRouteImport } from './routes/api/generate-image'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AuthenticatedResearchRouteImport } from './routes/_authenticated/research'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedPremiumRouteImport } from './routes/_authenticated/premium'
+import { Route as AuthenticatedImagesRouteImport } from './routes/_authenticated/images'
+import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
+import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
 import { Route as AuthenticatedChatChatIdRouteImport } from './routes/_authenticated/chat.$chatId'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedChatRoute = AuthenticatedChatRouteImport.update({
-  id: '/chat',
-  path: '/chat',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const ApiGenerateImageRoute = ApiGenerateImageRouteImport.update({
+  id: '/api/generate-image',
+  path: '/api/generate-image',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
-  id: '/home',
-  path: '/home',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedImagesRoute = AuthenticatedImagesRouteImport.update({
-  id: '/images',
-  path: '/images',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedPremiumRoute = AuthenticatedPremiumRouteImport.update({
-  id: '/premium',
-  path: '/premium',
+const AuthenticatedResearchRoute = AuthenticatedResearchRouteImport.update({
+  id: '/research',
+  path: '/research',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
@@ -61,20 +56,25 @@ const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedResearchRoute = AuthenticatedResearchRouteImport.update({
-  id: '/research',
-  path: '/research',
+const AuthenticatedPremiumRoute = AuthenticatedPremiumRouteImport.update({
+  id: '/premium',
+  path: '/premium',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiChatRoute = ApiChatRouteImport.update({
-  id: '/api/chat',
-  path: '/api/chat',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedImagesRoute = AuthenticatedImagesRouteImport.update({
+  id: '/images',
+  path: '/images',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiGenerateImageRoute = ApiGenerateImageRouteImport.update({
-  id: '/api/generate-image',
-  path: '/api/generate-image',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedChatRoute = AuthenticatedChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedChatChatIdRoute = AuthenticatedChatChatIdRouteImport.update({
   id: '/$chatId',
@@ -176,11 +176,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -190,39 +190,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/chat': {
-      id: '/_authenticated/chat'
-      path: '/chat'
-      fullPath: '/chat'
-      preLoaderRoute: typeof AuthenticatedChatRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/api/generate-image': {
+      id: '/api/generate-image'
+      path: '/api/generate-image'
+      fullPath: '/api/generate-image'
+      preLoaderRoute: typeof ApiGenerateImageRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/home': {
-      id: '/_authenticated/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof AuthenticatedHomeRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/images': {
-      id: '/_authenticated/images'
-      path: '/images'
-      fullPath: '/images'
-      preLoaderRoute: typeof AuthenticatedImagesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/premium': {
-      id: '/_authenticated/premium'
-      path: '/premium'
-      fullPath: '/premium'
-      preLoaderRoute: typeof AuthenticatedPremiumRouteImport
+    '/_authenticated/research': {
+      id: '/_authenticated/research'
+      path: '/research'
+      fullPath: '/research'
+      preLoaderRoute: typeof AuthenticatedResearchRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/profile': {
@@ -232,26 +225,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/research': {
-      id: '/_authenticated/research'
-      path: '/research'
-      fullPath: '/research'
-      preLoaderRoute: typeof AuthenticatedResearchRouteImport
+    '/_authenticated/premium': {
+      id: '/_authenticated/premium'
+      path: '/premium'
+      fullPath: '/premium'
+      preLoaderRoute: typeof AuthenticatedPremiumRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/chat': {
-      id: '/api/chat'
-      path: '/api/chat'
-      fullPath: '/api/chat'
-      preLoaderRoute: typeof ApiChatRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/images': {
+      id: '/_authenticated/images'
+      path: '/images'
+      fullPath: '/images'
+      preLoaderRoute: typeof AuthenticatedImagesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/generate-image': {
-      id: '/api/generate-image'
-      path: '/api/generate-image'
-      fullPath: '/api/generate-image'
-      preLoaderRoute: typeof ApiGenerateImageRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/home': {
+      id: '/_authenticated/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof AuthenticatedHomeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/chat': {
+      id: '/_authenticated/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof AuthenticatedChatRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/chat/$chatId': {
       id: '/_authenticated/chat/$chatId'
