@@ -87,16 +87,13 @@ function ChatDetail() {
     setStreaming(true);
     setStreamText("");
 
-    // Persist user message + update chat title if first message
-    const inserts: Promise<unknown>[] = [
-      supabase.from("messages").insert({ chat_id: chatId, user_id: u.user.id, role: "user", content: text }),
-    ];
+    // Persist user message + update chat metadata
+    await supabase.from("messages").insert({ chat_id: chatId, user_id: u.user.id, role: "user", content: text });
     if (messages.length === 0) {
-      inserts.push(supabase.from("chats").update({ title: text.slice(0, 60), mode }).eq("id", chatId));
+      await supabase.from("chats").update({ title: text.slice(0, 60), mode }).eq("id", chatId);
     } else {
-      inserts.push(supabase.from("chats").update({ mode, updated_at: new Date().toISOString() }).eq("id", chatId));
+      await supabase.from("chats").update({ mode, updated_at: new Date().toISOString() }).eq("id", chatId);
     }
-    await Promise.all(inserts);
 
     const controller = new AbortController();
     abortRef.current = controller;
