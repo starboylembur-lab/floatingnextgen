@@ -36,7 +36,7 @@ function Premium() {
       const { error } = await supabase.from("user_stats").update({
         is_premium: true,
         premium_since: new Date().toISOString(),
-      }).eq("user_id", u.user.id);
+      } as never).eq("user_id", u.user.id);
       if (error) throw error;
     },
     onSuccess: () => { toast.success("Welcome to Premium ✨"); qc.invalidateQueries({ queryKey: ["user-stats"] }); },

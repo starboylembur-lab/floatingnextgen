@@ -1,9 +1,9 @@
 import logoAsset from "@/assets/floating-logo.jpeg.asset.json";
 
-export function Logo({ size = 36, glow = true }: { size?: number; glow?: boolean }) {
+export function Logo({ size = 36, glow = true, className = "" }: { size?: number; glow?: boolean; className?: string }) {
   return (
     <div
-      className="relative shrink-0 overflow-hidden rounded-full"
+      className={`relative shrink-0 overflow-hidden rounded-full ${className}`}
       style={{ width: size, height: size }}
     >
       <img
