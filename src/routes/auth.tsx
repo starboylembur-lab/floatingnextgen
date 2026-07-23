@@ -47,12 +47,33 @@ function AuthPage() {
         <div className="mt-8 glass-strong rounded-3xl p-5 animate-float-in">
           <button
             disabled={loading}
-            onClick={async () => {
+            onClick={() => {
+              // Call synchronously inside the click handler so the browser
+              // treats the popup as user-initiated (avoids popup blockers /
+              // "Sign in was cancelled" errors).
+              const promise = lovable.auth.signInWithOAuth("google", {
+                redirect_uri: window.location.origin,
+              });
               setLoading(true);
-              const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-              if (r.error) { toast.error(r.error.message || "Google sign-in failed"); setLoading(false); return; }
-              if (r.redirected) return;
-              navigate({ to: "/home", replace: true });
+              promise
+                .then((r) => {
+                  if (r.error) {
+                    const msg = r.error.message || "Google sign-in failed";
+                    if (/cancel/i.test(msg)) {
+                      toast.error("Sign in was cancelled. Please allow popups and try again.");
+                    } else {
+                      toast.error(msg);
+                    }
+                    setLoading(false);
+                    return;
+                  }
+                  if (r.redirected) return;
+                  navigate({ to: "/home", replace: true });
+                })
+                .catch((e) => {
+                  toast.error(e?.message || "Google sign-in failed");
+                  setLoading(false);
+                });
             }}
             className="btn-ghost h-11 w-full !gap-3 !text-[14px]"
           >
