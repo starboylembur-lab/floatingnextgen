@@ -9,8 +9,8 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "FloatingAI — Your next-generation intelligence assistant" },
       { name: "description", content: "Ultra-premium AI assistant combining GPT-class reasoning with Perplexity-style deep research. Built by Zehan Nurhafizh." },
-      { property: "og:title", content: "FloatingAI — Next-generation intelligence" },
-      { property: "og:description", content: "Deep research, reasoning, image generation. An AI experience that feels a decade ahead." },
+      { property: "og:title", content: "FloatingAI — Your next-generation intelligence assistant" },
+      { property: "og:description", content: "Ultra-premium AI assistant combining GPT-class reasoning with Perplexity-style deep research. Built by Zehan Nurhafizh." },
     ],
   }),
   component: Landing,
