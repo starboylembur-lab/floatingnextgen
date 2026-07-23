@@ -1,24 +1,83 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Logo, Wordmark } from "@/components/logo";
+import { ArrowRight, Sparkles, Zap, Brain } from "lucide-react";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "FloatingAI — Your next-generation intelligence assistant" },
+      { name: "description", content: "Ultra-premium AI assistant combining GPT-class reasoning with Perplexity-style deep research. Built by Zehan Nurhafizh." },
+      { property: "og:title", content: "FloatingAI — Next-generation intelligence" },
+      { property: "og:description", content: "Deep research, reasoning, image generation. An AI experience that feels a decade ahead." },
+    ],
+  }),
+  component: Landing,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function Landing() {
+  const navigate = useNavigate();
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) navigate({ to: "/home", replace: true });
+      else setReady(true);
+    });
+  }, [navigate]);
+  if (!ready) {
+    return (
+      <div className="stars flex min-h-screen items-center justify-center">
+        <div className="animate-pulse-glow"><Logo size={56} /></div>
+      </div>
+    );
+  }
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="stars relative min-h-screen overflow-hidden">
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-md flex-col px-6 pb-10 pt-16 safe-top">
+        <div className="flex items-center gap-3 animate-float-in">
+          <Logo size={40} />
+          <div>
+            <Wordmark className="text-lg" />
+            <p className="text-[11px] text-muted-foreground">by HanStack · Zehan Nurhafizh</p>
+          </div>
+        </div>
+
+        <div className="mt-16 flex flex-1 flex-col items-center text-center">
+          <div className="animate-float-in" style={{ animationDelay: "80ms" }}>
+            <Logo size={128} />
+          </div>
+          <h1 className="mt-8 text-4xl font-semibold leading-[1.05] tracking-tight text-gradient animate-float-in" style={{ animationDelay: "160ms" }}>
+            Intelligence,<br />elegantly infinite.
+          </h1>
+          <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground animate-float-in" style={{ animationDelay: "240ms" }}>
+            FloatingAI blends deep research, expert reasoning, and generative
+            creativity into a single, weightless surface.
+          </p>
+
+          <div className="mt-10 grid w-full grid-cols-3 gap-2 animate-float-in" style={{ animationDelay: "320ms" }}>
+            {[
+              { i: Brain, t: "Reasoning" },
+              { i: Sparkles, t: "Research" },
+              { i: Zap, t: "Creation" },
+            ].map(({ i: I, t }) => (
+              <div key={t} className="glass rounded-2xl p-3 text-center">
+                <I className="mx-auto h-4 w-4 text-primary" />
+                <div className="mt-1.5 text-[11px] text-muted-foreground">{t}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-8 flex flex-col gap-3 animate-float-in" style={{ animationDelay: "400ms" }}>
+          <Link to="/auth" className="btn-primary h-12 text-[15px]">
+            Enter FloatingAI <ArrowRight className="h-4 w-4" />
+          </Link>
+          <p className="text-center text-[11px] text-muted-foreground">
+            2-day premium trial · unlocked on sign-in
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

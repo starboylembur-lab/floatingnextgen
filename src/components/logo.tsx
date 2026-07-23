@@ -1,0 +1,31 @@
+import logoAsset from "@/assets/floating-logo.jpeg.asset.json";
+
+export function Logo({ size = 36, glow = true }: { size?: number; glow?: boolean }) {
+  return (
+    <div
+      className="relative shrink-0 overflow-hidden rounded-full"
+      style={{ width: size, height: size }}
+    >
+      <img
+        src={logoAsset.url}
+        alt="FloatingAI"
+        width={size}
+        height={size}
+        className="h-full w-full object-cover"
+        draggable={false}
+      />
+      {glow && (
+        <div
+          className="pointer-events-none absolute inset-0 rounded-full"
+          style={{ boxShadow: "0 0 30px -4px oklch(0.72 0.2 295 / 0.6), inset 0 0 12px oklch(0.72 0.2 295 / 0.4)" }}
+        />
+      )}
+    </div>
+  );
+}
+
+export function Wordmark({ className = "" }: { className?: string }) {
+  return (
+    <span className={`text-gradient font-semibold tracking-tight ${className}`}>FloatingAI</span>
+  );
+}
