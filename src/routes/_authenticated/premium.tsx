@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Check, Crown, Sparkles, Zap, Rocket, Diamond, ShieldCheck, Infinity as InfIcon, Brain, ImagePlus, FileText, TrendingUp, Battery, Mic, Globe2, Layers, Bot, Palette, Lock } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { initUserStats } from "@/lib/user-stats.functions";
+import { initUserStats, activateTrial } from "@/lib/user-stats.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/premium")({
@@ -50,6 +50,15 @@ function Premium() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
+  const trial = useMutation({
+    mutationFn: () => activateTrial(),
+    onSuccess: () => { toast.success("2-day Premium trial activated 🚀"); qc.invalidateQueries({ queryKey: ["user-stats"] }); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to activate trial"),
+  });
+
+  const trialActive = stats?.trial_ends_at ? new Date(stats.trial_ends_at).getTime() > Date.now() : false;
+  const trialUsed = Boolean(stats?.trial_started_at);
+
   return (
     <div className="flex flex-col gap-5 px-4 pb-8 pt-5">
       <div>
@@ -86,8 +95,22 @@ function Premium() {
               {activate.isPending ? "Activating…" : "Activate Premium"}
             </button>
           )}
-          {!stats?.is_premium && stats?.trial_ends_at && new Date(stats.trial_ends_at).getTime() > Date.now() && (
-            <div className="mt-2 text-center text-[11px] text-muted-foreground">You're currently on your 2-day trial.</div>
+          {!stats?.is_premium && (
+            trialActive ? (
+              <div className="mt-2 text-center text-[11px] text-muted-foreground">
+                2-day trial active — ends {new Date(stats!.trial_ends_at!).toLocaleString()}
+              </div>
+            ) : trialUsed ? (
+              <div className="mt-2 text-center text-[11px] text-muted-foreground">Your free trial has ended.</div>
+            ) : (
+              <button
+                onClick={() => trial.mutate()}
+                disabled={trial.isPending}
+                className="glass mt-2 h-11 w-full rounded-2xl text-[13px] font-medium"
+              >
+                {trial.isPending ? "Activating trial…" : "Start free 2-day trial"}
+              </button>
+            )
           )}
         </div>
       </div>
