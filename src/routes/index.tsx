@@ -39,7 +39,7 @@ function Landing() {
           <Logo size={40} />
           <div>
             <Wordmark className="text-lg" />
-            <p className="text-[11px] text-muted-foreground">by HanStack · HanStack</p>
+            <p className="text-[11px] text-muted-foreground">by HanStack</p>
           </div>
         </div>
 
