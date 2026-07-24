@@ -7,10 +7,10 @@ import { ArrowRight, Sparkles, Zap, Brain } from "lucide-react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "FloatingAI — Your next-generation intelligence assistant" },
-      { name: "description", content: "Ultra-premium AI assistant combining GPT-class reasoning with Perplexity-style deep research. Built by Zehan Nurhafizh." },
-      { property: "og:title", content: "FloatingAI — Your next-generation intelligence assistant" },
-      { property: "og:description", content: "Ultra-premium AI assistant combining GPT-class reasoning with Perplexity-style deep research. Built by Zehan Nurhafizh." },
+      { title: "Floating Space — Your next-generation intelligence assistant" },
+      { name: "description", content: "Ultra-premium AI assistant combining GPT-class reasoning with Perplexity-style deep research. Built by HanStack." },
+      { property: "og:title", content: "Floating Space — Your next-generation intelligence assistant" },
+      { property: "og:description", content: "Ultra-premium AI assistant combining GPT-class reasoning with Perplexity-style deep research. Built by HanStack." },
     ],
   }),
   component: Landing,
@@ -39,7 +39,7 @@ function Landing() {
           <Logo size={40} />
           <div>
             <Wordmark className="text-lg" />
-            <p className="text-[11px] text-muted-foreground">by HanStack · Zehan Nurhafizh</p>
+            <p className="text-[11px] text-muted-foreground">by HanStack · HanStack</p>
           </div>
         </div>
 
@@ -51,7 +51,7 @@ function Landing() {
             Intelligence,<br />elegantly infinite.
           </h1>
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground animate-float-in" style={{ animationDelay: "240ms" }}>
-            FloatingAI blends deep research, expert reasoning, and generative
+            Floating Space blends deep research, expert reasoning, and generative
             creativity into a single, weightless surface.
           </p>
 
@@ -71,7 +71,7 @@ function Landing() {
 
         <div className="mt-8 flex flex-col gap-3 animate-float-in" style={{ animationDelay: "400ms" }}>
           <Link to="/auth" className="btn-primary h-12 text-[15px]">
-            Enter FloatingAI <ArrowRight className="h-4 w-4" />
+            Enter Floating Space <ArrowRight className="h-4 w-4" />
           </Link>
           <p className="text-center text-[11px] text-muted-foreground">
             2-day premium trial · unlocked on sign-in

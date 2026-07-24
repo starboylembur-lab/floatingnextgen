@@ -6,7 +6,7 @@ import { Compass, ArrowRight, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/research")({
-  head: () => ({ meta: [{ title: "Deep Research — FloatingAI" }, { name: "description", content: "Comprehensive multi-source research with FloatingAI." }] }),
+  head: () => ({ meta: [{ title: "Deep Research — Floating Space" }, { name: "description", content: "Comprehensive multi-source research with Floating Space." }] }),
   component: Research,
 });
 

@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/chat")({
-  head: () => ({ meta: [{ title: "Chats — FloatingAI" }] }),
+  head: () => ({ meta: [{ title: "Chats — Floating Space" }] }),
   component: ChatShell,
 });
 
@@ -83,7 +83,7 @@ function ChatList() {
         <div className="mt-8 flex flex-col items-center gap-3 text-center">
           <div className="glass grid h-14 w-14 place-items-center rounded-full"><MessagesSquare className="h-6 w-6 text-primary" /></div>
           <div className="text-sm font-medium">No conversations yet</div>
-          <p className="max-w-xs text-xs text-muted-foreground">Start a new one — FloatingAI remembers everything.</p>
+          <p className="max-w-xs text-xs text-muted-foreground">Start a new one — Floating Space remembers everything.</p>
           <button onClick={() => create.mutate()} className="btn-primary mt-2 h-10 px-4"><Plus className="h-4 w-4" /> Start chat</button>
         </div>
       ) : (

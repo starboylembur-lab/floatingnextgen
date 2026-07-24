@@ -11,8 +11,8 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/_authenticated/home")({
   head: () => ({
     meta: [
-      { title: "Home — FloatingAI" },
-      { name: "description", content: "Your FloatingAI dashboard — capabilities, recommended topics, and instant access to intelligence." },
+      { title: "Home — Floating Space" },
+      { name: "description", content: "Your Floating Space dashboard — capabilities, recommended topics, and instant access to intelligence." },
     ],
   }),
   component: Home,
@@ -103,7 +103,7 @@ function Home() {
         className="glass-strong flex items-center gap-3 rounded-2xl px-4 py-3.5 text-left transition-transform active:scale-[0.99]"
       >
         <Search className="h-4 w-4 text-muted-foreground" />
-        <span className="flex-1 text-sm text-muted-foreground">Ask FloatingAI anything…</span>
+        <span className="flex-1 text-sm text-muted-foreground">Ask Floating Space anything…</span>
         <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-muted-foreground">⌘K</span>
       </button>
 

@@ -6,7 +6,7 @@ import { initUserStats, activateTrial } from "@/lib/user-stats.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/premium")({
-  head: () => ({ meta: [{ title: "Premium — FloatingAI" }, { name: "description", content: "Unlock unlimited intelligence with FloatingAI Premium." }] }),
+  head: () => ({ meta: [{ title: "Premium — Floating Space" }, { name: "description", content: "Unlock unlimited intelligence with Floating Space Premium." }] }),
   component: Premium,
 });
 
@@ -66,7 +66,7 @@ function Premium() {
           <Crown className="h-3 w-3" /> Premium
         </div>
         <h1 className="text-2xl font-semibold tracking-tight text-gradient">Intelligence, unrestricted.</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Unlock everything FloatingAI can do.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Unlock everything Floating Space can do.</p>
       </div>
 
       {/* Luxury pricing card */}
@@ -77,7 +77,7 @@ function Premium() {
           <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full" style={{ background: "radial-gradient(circle, oklch(0.72 0.2 295 / 0.35), transparent 70%)" }} />
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">FloatingAI</div>
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Floating Space</div>
               <div className="text-2xl font-semibold tracking-tight">Premium</div>
             </div>
             <Crown className="h-8 w-8 text-primary" />

@@ -9,7 +9,7 @@ import { initUserStats } from "@/lib/user-stats.functions";
 import { LogOut, Crown, User, Mail, Save, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/profile")({
-  head: () => ({ meta: [{ title: "Profile — FloatingAI" }] }),
+  head: () => ({ meta: [{ title: "Profile — Floating Space" }] }),
   component: Profile,
 });
 
@@ -55,7 +55,7 @@ function Profile() {
           <Logo size={26} className="absolute -bottom-1 -right-1 ring-2 ring-background rounded-full" />
         </div>
         <div>
-          <div className="text-lg font-semibold">{name || "FloatingAI User"}</div>
+          <div className="text-lg font-semibold">{name || "Floating Space User"}</div>
           <div className="text-xs text-muted-foreground">{email}</div>
         </div>
         {stats?.is_premium && (

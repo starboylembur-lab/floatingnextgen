@@ -4,7 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* FloatingAI - futuristic AI lab dark theme */
+/* Floating Space - futuristic AI lab dark theme */
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
