@@ -8,16 +8,25 @@ export const initUserStats = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     // Upsert defaults
     await supabase.from("user_stats").upsert({ user_id: userId }, { onConflict: "user_id" });
+    const { data: stats } = await supabase.from("user_stats").select("*").eq("user_id", userId).maybeSingle();
+    return stats;
+  });
+
+// Manually activate the 2-day premium trial. Only allowed once per user.
+export const activateTrial = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
     const { data: existing } = await supabase.from("user_stats").select("*").eq("user_id", userId).maybeSingle();
-    if (existing && !existing.trial_started_at) {
-      const now = new Date();
-      const end = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
-      await supabase.from("user_stats").update({
-        trial_started_at: now.toISOString(),
-        trial_ends_at: end.toISOString(),
-        capacity_max: 1000,
-      }).eq("user_id", userId);
+    if (existing?.trial_started_at) {
+      throw new Error("Trial already activated");
     }
+    const now = new Date();
+    const end = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
+    await supabase.from("user_stats").update({
+      trial_started_at: now.toISOString(),
+      trial_ends_at: end.toISOString(),
+    }).eq("user_id", userId);
     const { data: stats } = await supabase.from("user_stats").select("*").eq("user_id", userId).maybeSingle();
     return stats;
   });
