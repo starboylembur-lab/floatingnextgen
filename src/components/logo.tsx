@@ -8,7 +8,7 @@ export function Logo({ size = 36, glow = true, className = "" }: { size?: number
     >
       <img
         src={logoAsset.url}
-        alt="FloatingAI"
+        alt="Floating Space"
         width={size}
         height={size}
         className="h-full w-full object-cover"
@@ -26,6 +26,6 @@ export function Logo({ size = 36, glow = true, className = "" }: { size?: number
 
 export function Wordmark({ className = "" }: { className?: string }) {
   return (
-    <span className={`text-gradient font-semibold tracking-tight ${className}`}>FloatingAI</span>
+    <span className={`text-gradient font-semibold tracking-tight ${className}`}>Floating Space</span>
   );
 }

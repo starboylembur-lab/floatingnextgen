@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Download, Loader2, Sparkles, Wand2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/images")({
-  head: () => ({ meta: [{ title: "Image Studio — FloatingAI" }, { name: "description", content: "Generate ultra-realistic HD images with FloatingAI." }] }),
+  head: () => ({ meta: [{ title: "Image Studio — Floating Space" }, { name: "description", content: "Generate ultra-realistic HD images with Floating Space." }] }),
   component: Images,
 });
 

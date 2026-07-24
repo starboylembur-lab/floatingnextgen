@@ -9,8 +9,8 @@ import { ArrowLeft, Mail, Phone, Loader2 } from "lucide-react";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — FloatingAI" },
-      { name: "description", content: "Sign in to unlock your 2-day premium trial and start exploring FloatingAI." },
+      { title: "Sign in — Floating Space" },
+      { name: "description", content: "Sign in to unlock your 2-day premium trial and start exploring Floating Space." },
     ],
   }),
   component: AuthPage,

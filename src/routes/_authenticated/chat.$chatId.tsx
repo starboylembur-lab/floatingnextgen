@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/chat/$chatId")({
     q: typeof s.q === "string" ? s.q : undefined,
     mode: s.mode === "basic" || s.mode === "deep" || s.mode === "standard" ? s.mode : undefined,
   }),
-  head: () => ({ meta: [{ title: "Conversation — FloatingAI" }] }),
+  head: () => ({ meta: [{ title: "Conversation — Floating Space" }] }),
   component: ChatDetail,
 });
 
@@ -137,7 +137,7 @@ function ChatDetail() {
         </Link>
         <div className="min-w-0 flex-1">
           <div className="truncate text-[13px] font-medium">{chat?.title ?? "Conversation"}</div>
-          <div className="text-[10px] text-muted-foreground">FloatingAI · {modeMeta[mode].label}</div>
+          <div className="text-[10px] text-muted-foreground">Floating Space · {modeMeta[mode].label}</div>
         </div>
         <ModeSelector value={mode} onChange={(m) => { setMode(m); supabase.from("chats").update({ mode: m }).eq("id", chatId); }} />
       </header>
@@ -157,7 +157,7 @@ function ChatDetail() {
             <div className="animate-float-in">
               <div className="mb-1 flex items-center gap-2">
                 <Logo size={22} />
-                <span className="shimmer-text text-[12px] font-medium">FloatingAI is thinking…</span>
+                <span className="shimmer-text text-[12px] font-medium">Floating Space is thinking…</span>
               </div>
               {streamText ? (
                 <Markdown text={streamText} />
@@ -185,7 +185,7 @@ function ChatDetail() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); } }}
             rows={1}
-            placeholder={`Message FloatingAI (${modeMeta[mode].label})…`}
+            placeholder={`Message Floating Space (${modeMeta[mode].label})…`}
             className="max-h-40 flex-1 resize-none bg-transparent px-3 py-2.5 text-[14px] outline-none placeholder:text-muted-foreground"
           />
           <button type="button" className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground hover:text-foreground" aria-label="Voice">
@@ -218,7 +218,7 @@ function MessageBubble({ msg }: { msg: Msg }) {
       {!isUser && (
         <div className="mb-1 flex items-center gap-2">
           <Logo size={22} />
-          <span className="text-[11px] font-medium text-muted-foreground">FloatingAI</span>
+          <span className="text-[11px] font-medium text-muted-foreground">Floating Space</span>
         </div>
       )}
       {isUser ? (
