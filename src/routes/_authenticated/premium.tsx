@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Check, Crown, Sparkles, Zap, Rocket, Diamond, ShieldCheck, Infinity as InfIcon, Brain, ImagePlus, FileText, TrendingUp } from "lucide-react";
+import { Check, Crown, Sparkles, Zap, Rocket, Diamond, ShieldCheck, Infinity as InfIcon, Brain, ImagePlus, FileText, TrendingUp, Battery, Mic, Globe2, Layers, Bot, Palette, Lock } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { initUserStats } from "@/lib/user-stats.functions";
@@ -11,6 +11,7 @@ export const Route = createFileRoute("/_authenticated/premium")({
 });
 
 const FEATURES = [
+  { i: Battery, t: "+10,000 AI capacity boost instantly" },
   { i: InfIcon, t: "Unlimited Deep Research access" },
   { i: Brain, t: "Advanced AI reasoning mode" },
   { i: ImagePlus, t: "Higher image generation quality" },
@@ -23,6 +24,12 @@ const FEATURES = [
   { i: Crown, t: "Advanced creativity mode" },
   { i: ShieldCheck, t: "No advertising" },
   { i: Rocket, t: "Future feature access" },
+  { i: Bot, t: "Multi-agent orchestration" },
+  { i: Globe2, t: "Real-time web browsing intelligence" },
+  { i: Layers, t: "Long-context 1M token memory" },
+  { i: Mic, t: "Studio-grade voice conversations" },
+  { i: Palette, t: "8K cinematic image rendering" },
+  { i: Lock, t: "Private, encrypted chat vault" },
 ];
 
 function Premium() {
@@ -35,10 +42,11 @@ function Premium() {
       if (!u.user) throw new Error("Sign in first");
       const { error } = await supabase.from("user_stats").update({
         is_premium: true,
+        capacity_max: 10000,
       }).eq("user_id", u.user.id);
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("Welcome to Premium ✨"); qc.invalidateQueries({ queryKey: ["user-stats"] }); },
+    onSuccess: () => { toast.success("Welcome to Premium ✨ +10,000 capacity unlocked"); qc.invalidateQueries({ queryKey: ["user-stats"] }); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
