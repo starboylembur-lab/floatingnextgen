@@ -14,10 +14,14 @@ function inline(s: string) {
   s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, t, u) => `<a href="${u}" target="_blank" rel="noopener noreferrer">${t}</a>`);
   // bold
   s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  // bold via __text__
+  s = s.replace(/__([^_]+)__/g, "<strong>$1</strong>");
   // italic
   s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>");
   // inline code
   s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
+  // strip any stray asterisks so users never see raw * in rendered output
+  s = s.replace(/\*+/g, "");
   return s;
 }
 

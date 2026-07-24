@@ -25,7 +25,12 @@ export const Route = createFileRoute("/api/chat")({
           method: "POST",
           headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
           body: JSON.stringify({
-            model: mode === "deep" ? "google/gemini-2.5-pro" : "google/gemini-3.6-flash",
+            model:
+              mode === "deep"
+                ? "google/gemini-3.6-flash"
+                : mode === "standard"
+                  ? "google/gemini-3.6-flash"
+                  : "google/gemini-3.1-flash-lite",
             stream: true,
             messages: [{ role: "system", content: SYS[mode] }, ...messages],
           }),
