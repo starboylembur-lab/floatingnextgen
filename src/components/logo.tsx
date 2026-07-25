@@ -26,6 +26,11 @@ export function Logo({ size = 36, glow = true, className = "" }: { size?: number
 
 export function Wordmark({ className = "" }: { className?: string }) {
   return (
-    <span className={`text-gradient font-semibold tracking-tight ${className}`}>Floating Space</span>
+    <span
+      className={`text-gradient font-semibold tracking-[0.02em] ${className}`}
+      style={{ fontFamily: "var(--font-display)" }}
+    >
+      Floating Space
+    </span>
   );
 }

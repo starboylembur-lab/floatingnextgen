@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 // Minimal, safe-ish markdown renderer sufficient for chat: headings, bold, italic,
 // inline code, code blocks, lists, blockquotes, links, tables (pipes), and paragraphs.
@@ -10,6 +10,8 @@ function esc(s: string) {
 
 function inline(s: string) {
   s = esc(s);
+  // images ![alt](url)
+  s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_m, a, u) => `<img alt="${a}" src="${u}" loading="lazy" />`);
   // links [text](url)
   s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, t, u) => `<a href="${u}" target="_blank" rel="noopener noreferrer">${t}</a>`);
   // bold
@@ -20,7 +22,7 @@ function inline(s: string) {
   s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>");
   // inline code
   s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
-  // strip any stray asterisks so users never see raw * in rendered output
+  // strip stray asterisks (but preserve inside <code> tags we just made)
   s = s.replace(/\*+/g, "");
   return s;
 }
@@ -44,13 +46,22 @@ export function markdownToHtml(md: string): string {
     // fenced code
     const fence = line.match(/^```(\w*)\s*$/);
     if (fence) {
+      const lang = fence[1] || "";
       i++;
       const code: string[] = [];
       while (i < lines.length && !/^```\s*$/.test(lines[i])) {
         code.push(lines[i]); i++;
       }
       i++; // consume closing fence
-      out.push(`<pre><code>${esc(code.join("\n"))}</code></pre>`);
+      const raw = code.join("\n");
+      const encoded = encodeURIComponent(raw);
+      out.push(
+        `<div class="code-block">` +
+          (lang ? `<span class="code-lang">${esc(lang)}</span>` : "") +
+          `<button type="button" class="copy-code" data-code="${encoded}">Copy</button>` +
+          `<pre><code>${esc(raw)}</code></pre>` +
+        `</div>`
+      );
       continue;
     }
     // table
@@ -102,5 +113,47 @@ export function markdownToHtml(md: string): string {
 
 export function Markdown({ text }: { text: string }) {
   const html = useMemo(() => markdownToHtml(text), [text]);
-  return <div className="prose-ai" dangerouslySetInnerHTML={{ __html: html }} />;
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // KaTeX auto-render if available
+    const w = window as unknown as {
+      renderMathInElement?: (el: HTMLElement, opts: unknown) => void;
+    };
+    if (typeof w.renderMathInElement === "function") {
+      try {
+        w.renderMathInElement(el, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\[", right: "\\]", display: true },
+            { left: "$", right: "$", display: false },
+            { left: "\\(", right: "\\)", display: false },
+          ],
+          throwOnError: false,
+        });
+      } catch { /* ignore */ }
+    }
+    // Copy-code button wiring
+    const onClick = (e: Event) => {
+      const t = e.target as HTMLElement;
+      const btn = t.closest(".copy-code") as HTMLButtonElement | null;
+      if (btn) {
+        const code = decodeURIComponent(btn.dataset.code || "");
+        navigator.clipboard.writeText(code).then(() => {
+          const orig = btn.textContent;
+          btn.textContent = "Copied";
+          setTimeout(() => { btn.textContent = orig; }, 1200);
+        }).catch(() => {});
+        return;
+      }
+      const img = t.closest("img") as HTMLImageElement | null;
+      if (img && img.src) window.open(img.src, "_blank", "noopener");
+    };
+    el.addEventListener("click", onClick);
+    return () => el.removeEventListener("click", onClick);
+  }, [html]);
+
+  return <div ref={ref} className="prose-ai" dangerouslySetInnerHTML={{ __html: html }} />;
 }
