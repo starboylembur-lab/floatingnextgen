@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, ArrowUp, Copy, Share2, Loader2, Mic, Square, Sparkles, Zap, Compass } from "lucide-react";
+import { ArrowLeft, ArrowUp, Copy, Share2, Mic, Square, Sparkles, Zap, Compass, Paperclip, Image as ImageIcon, Telescope, X } from "lucide-react";
 import { Markdown } from "@/lib/markdown";
 import { streamChat } from "@/lib/streams";
 import { toast } from "sonner";
@@ -34,9 +34,35 @@ function ChatDetail() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [streaming, setStreaming] = useState(false);
   const [streamText, setStreamText] = useState("");
+  const [attachments, setAttachments] = useState<{ name: string; text: string }[]>([]);
+  const [dragOver, setDragOver] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  // auto-grow textarea
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 240)}px`;
+  }, [input]);
+
+  async function readFiles(files: FileList | File[]) {
+    const arr = Array.from(files).slice(0, 5);
+    const parsed = await Promise.all(arr.map(async (f) => {
+      if (f.size > 200_000) {
+        toast.error(`${f.name} too large (max 200KB text)`);
+        return null;
+      }
+      try {
+        const text = await f.text();
+        return { name: f.name, text: text.slice(0, 100_000) };
+      } catch { return null; }
+    }));
+    setAttachments((a) => [...a, ...parsed.filter(Boolean) as { name: string; text: string }[]]);
+  }
 
   const { data: chat } = useQuery({
     queryKey: ["chat", chatId],
@@ -77,18 +103,24 @@ function ChatDetail() {
   useEffect(() => { inputRef.current?.focus(); }, [chatId]);
 
   async function send(text: string) {
-    if (!text.trim() || streaming) return;
+    if ((!text.trim() && attachments.length === 0) || streaming) return;
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
     setInput("");
 
-    const userMsg: Msg = { id: crypto.randomUUID(), role: "user", content: text };
+    const attachedBlock = attachments.length
+      ? "\n\n" + attachments.map((a) => `Attached file: ${a.name}\n\n\`\`\`\n${a.text}\n\`\`\``).join("\n\n")
+      : "";
+    const composed = text + attachedBlock;
+    setAttachments([]);
+
+    const userMsg: Msg = { id: crypto.randomUUID(), role: "user", content: composed };
     setMessages((m) => [...m, userMsg]);
     setStreaming(true);
     setStreamText("");
 
     // Persist user message + update chat metadata
-    await supabase.from("messages").insert({ chat_id: chatId, user_id: u.user.id, role: "user", content: text });
+    await supabase.from("messages").insert({ chat_id: chatId, user_id: u.user.id, role: "user", content: composed });
     if (messages.length === 0) {
       await supabase.from("chats").update({ title: text.slice(0, 60), mode }).eq("id", chatId);
     } else {
@@ -129,10 +161,18 @@ function ChatDetail() {
   } as const;
 
   return (
-    <div className="flex h-[100dvh] flex-col">
+    <div
+      className={`flex h-[100dvh] flex-col ${dragOver ? "dropzone-active" : ""}`}
+      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+      onDragLeave={(e) => { e.preventDefault(); setDragOver(false); }}
+      onDrop={(e) => {
+        e.preventDefault(); setDragOver(false);
+        if (e.dataTransfer.files.length) readFiles(e.dataTransfer.files);
+      }}
+    >
       {/* Header */}
       <header className="glass-strong sticky top-0 z-10 flex items-center gap-2 px-3 py-2.5">
-        <Link to="/chat" className="grid h-9 w-9 place-items-center rounded-full text-muted-foreground hover:text-foreground">
+        <Link to="/chat" className="mobile-only grid h-9 w-9 place-items-center rounded-full text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div className="min-w-0 flex-1">
@@ -143,15 +183,15 @@ function ChatDetail() {
       </header>
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 pt-4 pb-2">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 pt-4 pb-2 md:px-8">
         {messages.length === 0 && !streaming && (
-          <div className="flex flex-col items-center gap-3 pt-14 text-center">
+          <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 pt-14 text-center">
             <Logo size={64} />
-            <div className="text-sm font-medium">How can I help, today?</div>
+            <div className="font-display text-lg font-semibold text-gradient">How can I help today?</div>
             <p className="max-w-xs text-xs text-muted-foreground">Ask anything — reasoning, research, code, analysis, creativity.</p>
           </div>
         )}
-        <div className="flex flex-col gap-4">
+        <div className="mx-auto flex max-w-3xl flex-col gap-4">
           {messages.map((m) => <MessageBubble key={m.id} msg={m} />)}
           {streaming && (
             <div className="animate-float-in">
@@ -174,33 +214,71 @@ function ChatDetail() {
       </div>
 
       {/* Composer */}
-      <div className="px-3 pb-3">
-        <form
-          onSubmit={(e) => { e.preventDefault(); send(input); }}
-          className="glass-strong flex items-end gap-2 rounded-3xl p-2"
-        >
-          <textarea
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); } }}
-            rows={1}
-            placeholder={`Message Floating Space (${modeMeta[mode].label})…`}
-            className="max-h-40 flex-1 resize-none bg-transparent px-3 py-2.5 text-[14px] outline-none placeholder:text-muted-foreground"
-          />
-          <button type="button" className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground hover:text-foreground" aria-label="Voice">
-            <Mic className="h-4 w-4" />
-          </button>
-          {streaming ? (
-            <button type="button" onClick={stop} className="grid h-10 w-10 place-items-center rounded-full bg-destructive/90 text-white" aria-label="Stop">
-              <Square className="h-3.5 w-3.5" />
-            </button>
-          ) : (
-            <button type="submit" disabled={!input.trim()} className="grid h-10 w-10 place-items-center rounded-full disabled:opacity-40" style={{ background: "linear-gradient(135deg, oklch(0.78 0.18 295), oklch(0.75 0.16 260))", boxShadow: "0 8px 24px -8px oklch(0.72 0.2 295 / 0.7)" }} aria-label="Send">
-              <ArrowUp className="h-4 w-4 text-[oklch(0.15_0.03_275)]" />
-            </button>
+      <div className="px-3 pb-3 md:px-8 md:pb-6">
+        <div className="mx-auto max-w-3xl">
+          {attachments.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-1.5">
+              {attachments.map((a, idx) => (
+                <span key={idx} className="glass flex items-center gap-1.5 rounded-full py-1 pl-2.5 pr-1 text-[11px]">
+                  <Paperclip className="h-3 w-3 text-primary" /> {a.name}
+                  <button onClick={() => setAttachments((arr) => arr.filter((_, i) => i !== idx))} className="grid h-4 w-4 place-items-center rounded-full text-muted-foreground hover:bg-white/10 hover:text-foreground" aria-label="Remove">
+                    <X className="h-2.5 w-2.5" />
+                  </button>
+                </span>
+              ))}
+            </div>
           )}
-        </form>
+          <form
+            onSubmit={(e) => { e.preventDefault(); send(input); }}
+            className="glass-strong flex flex-col gap-1.5 rounded-3xl p-2"
+          >
+            <textarea
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); } }}
+              rows={1}
+              placeholder={`Message Floating Space (${modeMeta[mode].label})…`}
+              className="max-h-[240px] w-full resize-none bg-transparent px-3 py-2.5 text-[14px] outline-none placeholder:text-muted-foreground"
+            />
+            <div className="flex items-center gap-1 px-1">
+              <input
+                ref={fileRef}
+                type="file"
+                multiple
+                accept=".txt,.md,.csv,.json,.js,.ts,.tsx,.jsx,.py,.html,.css,.log"
+                className="hidden"
+                onChange={(e) => { if (e.target.files) readFiles(e.target.files); e.target.value = ""; }}
+              />
+              <button type="button" onClick={() => fileRef.current?.click()} className="grid h-9 w-9 place-items-center rounded-full text-muted-foreground hover:bg-white/5 hover:text-foreground" aria-label="Attach file" title="Upload file">
+                <Paperclip className="h-4 w-4" />
+              </button>
+              <button type="button" onClick={() => navigate({ to: "/images" })} className="grid h-9 w-9 place-items-center rounded-full text-muted-foreground hover:bg-white/5 hover:text-foreground" aria-label="Generate image" title="Generate image">
+                <ImageIcon className="h-4 w-4" />
+              </button>
+              <button type="button" onClick={() => setMode("deep")} className={`grid h-9 place-items-center rounded-full px-2.5 text-[11px] font-medium transition-colors ${mode === "deep" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-white/5 hover:text-foreground"}`} title="Deep research">
+                <Telescope className="mr-1 inline h-3.5 w-3.5" /> Research
+              </button>
+              <button type="button" className="grid h-9 w-9 place-items-center rounded-full text-muted-foreground hover:bg-white/5 hover:text-foreground" aria-label="Voice">
+                <Mic className="h-4 w-4" />
+              </button>
+              <div className="ml-auto">
+                {streaming ? (
+                  <button type="button" onClick={stop} className="grid h-9 w-9 place-items-center rounded-full bg-destructive/90 text-white" aria-label="Stop">
+                    <Square className="h-3.5 w-3.5" />
+                  </button>
+                ) : (
+                  <button type="submit" disabled={!input.trim() && attachments.length === 0} className="grid h-9 w-9 place-items-center rounded-full disabled:opacity-40" style={{ background: "linear-gradient(135deg, oklch(0.78 0.18 295), oklch(0.75 0.16 260))", boxShadow: "0 8px 24px -8px oklch(0.72 0.2 295 / 0.7)" }} aria-label="Send">
+                    <ArrowUp className="h-4 w-4 text-[oklch(0.15_0.03_275)]" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </form>
+          <div className="mt-1.5 text-center text-[10px] text-muted-foreground">
+            Enter to send · Shift+Enter for newline · Drop files anywhere to attach
+          </div>
+        </div>
       </div>
     </div>
   );
