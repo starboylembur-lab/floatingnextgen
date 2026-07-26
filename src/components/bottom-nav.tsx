@@ -1,12 +1,12 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, MessagesSquare, Sparkles, Image as ImageIcon, Crown } from "lucide-react";
+import { Home, MessagesSquare, Sparkles, Image as ImageIcon, FileText } from "lucide-react";
 
 const items = [
   { to: "/home", label: "Home", icon: Home },
   { to: "/chat", label: "Chat", icon: MessagesSquare },
   { to: "/research", label: "Research", icon: Sparkles },
+  { to: "/documents", label: "Docs", icon: FileText },
   { to: "/images", label: "Images", icon: ImageIcon },
-  { to: "/premium", label: "Premium", icon: Crown },
 ] as const;
 
 export function BottomNav() {

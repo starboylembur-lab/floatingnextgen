@@ -5,7 +5,7 @@ import { Logo, Wordmark } from "@/components/logo";
 import { initUserStats } from "@/lib/user-stats.functions";
 import {
   Plus, Search, MessagesSquare, Compass, Image as ImageIcon,
-  Crown, Settings, LogOut, Trash2, Sparkles, Home,
+  Crown, Settings, LogOut, Trash2, Sparkles, Home, FileText,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -76,6 +76,7 @@ export function DesktopSidebar() {
   const navItems = [
     { to: "/home", label: "Home", icon: Home },
     { to: "/research", label: "Deep Research", icon: Compass },
+    { to: "/documents", label: "Documents", icon: FileText },
     { to: "/images", label: "Image Studio", icon: ImageIcon },
     { to: "/premium", label: "Premium", icon: Crown },
   ] as const;
