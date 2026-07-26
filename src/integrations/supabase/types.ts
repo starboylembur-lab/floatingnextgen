@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_documents: {
+        Row: {
+          chat_id: string
+          created_at: string
+          document_id: string
+          user_id: string
+        }
+        Insert: {
+          chat_id: string
+          created_at?: string
+          document_id: string
+          user_id: string
+        }
+        Update: {
+          chat_id?: string
+          created_at?: string
+          document_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_documents_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_documents_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chats: {
         Row: {
           created_at: string
@@ -36,6 +72,86 @@ export type Database = {
           id?: string
           mode?: string
           title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      document_chunks: {
+        Row: {
+          chunk_index: number
+          content: string
+          created_at: string
+          document_id: string
+          embedding: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          chunk_index: number
+          content: string
+          created_at?: string
+          document_id: string
+          embedding: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          chunk_index?: number
+          content?: string
+          created_at?: string
+          document_id?: string
+          embedding?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_chunks_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          chunk_count: number
+          created_at: string
+          error: string | null
+          id: string
+          mime: string
+          name: string
+          size: number
+          status: string
+          storage_path: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chunk_count?: number
+          created_at?: string
+          error?: string | null
+          id?: string
+          mime: string
+          name: string
+          size: number
+          status?: string
+          storage_path: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chunk_count?: number
+          created_at?: string
+          error?: string | null
+          id?: string
+          mime?: string
+          name?: string
+          size?: number
+          status?: string
+          storage_path?: string
           updated_at?: string
           user_id?: string
         }
@@ -138,7 +254,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      match_document_chunks: {
+        Args: {
+          doc_ids: string[]
+          match_count?: number
+          query_embedding: string
+        }
+        Returns: {
+          chunk_index: number
+          content: string
+          document_id: string
+          id: string
+          similarity: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

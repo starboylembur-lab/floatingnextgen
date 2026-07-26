@@ -2,12 +2,14 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, ArrowUp, Copy, Share2, Mic, Square, Sparkles, Zap, Compass, Paperclip, Image as ImageIcon, Telescope, X } from "lucide-react";
+import { ArrowLeft, ArrowUp, Copy, Share2, Mic, Square, Sparkles, Zap, Compass, Paperclip, Image as ImageIcon, Telescope, X, FileText } from "lucide-react";
 import { Markdown } from "@/lib/markdown";
 import { streamChat } from "@/lib/streams";
 import { toast } from "sonner";
 import { addCapacity } from "@/lib/user-stats.functions";
 import { Logo } from "@/components/logo";
+import { DocumentPicker } from "@/components/document-picker";
+import { getChatDocuments, retrieveContext } from "@/lib/documents.functions";
 
 type Mode = "basic" | "standard" | "deep";
 
@@ -36,6 +38,7 @@ function ChatDetail() {
   const [streamText, setStreamText] = useState("");
   const [attachments, setAttachments] = useState<{ name: string; text: string }[]>([]);
   const [dragOver, setDragOver] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -76,6 +79,11 @@ function ChatDetail() {
   useEffect(() => {
     if (chat?.mode) setMode(chat.mode as Mode);
   }, [chat?.mode]);
+
+  const { data: attachedDocs = [] } = useQuery({
+    queryKey: ["chat-documents", chatId],
+    queryFn: () => getChatDocuments({ data: { chatId } }),
+  });
 
   useEffect(() => {
     (async () => {
@@ -127,13 +135,28 @@ function ChatDetail() {
       await supabase.from("chats").update({ mode, updated_at: new Date().toISOString() }).eq("id", chatId);
     }
 
+    // If documents are attached to this chat, fetch relevant passages first.
+    let passages: { name: string; content: string; chunk_index: number }[] = [];
+    if (attachedDocs.length > 0) {
+      try {
+        const { passages: p } = await retrieveContext({ data: { chatId, query: text, matchCount: 6 } });
+        passages = p.map((x) => ({ name: x.name, content: x.content, chunk_index: x.chunk_index }));
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Retrieval failed");
+      }
+    }
+
     const controller = new AbortController();
     abortRef.current = controller;
     let acc = "";
     try {
       await streamChat(
         "/api/chat",
-        { mode, messages: [...messages, userMsg].map(({ role, content }) => ({ role, content })) },
+        {
+          mode,
+          messages: [...messages, userMsg].map(({ role, content }) => ({ role, content })),
+          passages,
+        },
         (delta) => { acc += delta; setStreamText(acc); },
         controller.signal,
       );
@@ -181,6 +204,16 @@ function ChatDetail() {
         </div>
         <ModeSelector value={mode} onChange={(m) => { setMode(m); supabase.from("chats").update({ mode: m }).eq("id", chatId); }} />
       </header>
+
+      {attachedDocs.length > 0 && (
+        <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center gap-1.5 px-4 pt-2">
+          {attachedDocs.map((d) => (
+            <button key={d.id} onClick={() => setPickerOpen(true)} className="glass flex items-center gap-1.5 rounded-full py-1 pl-2.5 pr-2.5 text-[11px]" title="Manage attached documents">
+              <FileText className="h-3 w-3 text-primary" /> {d.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 pt-4 pb-2 md:px-8">
@@ -253,6 +286,9 @@ function ChatDetail() {
               <button type="button" onClick={() => fileRef.current?.click()} className="grid h-9 w-9 place-items-center rounded-full text-muted-foreground hover:bg-white/5 hover:text-foreground" aria-label="Attach file" title="Upload file">
                 <Paperclip className="h-4 w-4" />
               </button>
+              <button type="button" onClick={() => setPickerOpen(true)} className={`grid h-9 w-9 place-items-center rounded-full transition-colors ${attachedDocs.length > 0 ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-white/5 hover:text-foreground"}`} aria-label="Chat with document" title="Chat with a document">
+                <FileText className="h-4 w-4" />
+              </button>
               <button type="button" onClick={() => navigate({ to: "/images" })} className="grid h-9 w-9 place-items-center rounded-full text-muted-foreground hover:bg-white/5 hover:text-foreground" aria-label="Generate image" title="Generate image">
                 <ImageIcon className="h-4 w-4" />
               </button>
@@ -280,6 +316,8 @@ function ChatDetail() {
           </div>
         </div>
       </div>
+
+      {pickerOpen && <DocumentPicker chatId={chatId} onClose={() => setPickerOpen(false)} />}
     </div>
   );
 }
