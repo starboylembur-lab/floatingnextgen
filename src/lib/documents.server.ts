@@ -10,14 +10,17 @@ export async function extractTextFromFile(bytes: Uint8Array, mime: string, name:
   const lower = name.toLowerCase();
   if (mime === "application/pdf" || lower.endsWith(".pdf")) {
     const pdf = await getDocumentProxy(bytes);
-    const { text } = await extractText(pdf, { mergePages: true });
+    const result = await extractText(pdf, { mergePages: true });
+    const text: string | string[] = (result as { text: string | string[] }).text;
     return typeof text === "string" ? text : text.join("\n\n");
   }
   if (
     mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
     lower.endsWith(".docx")
   ) {
-    const { value } = await mammoth.extractRawText({ arrayBuffer: bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) });
+    const copy = new Uint8Array(bytes.byteLength);
+    copy.set(bytes);
+    const { value } = await mammoth.extractRawText({ arrayBuffer: copy.buffer });
     return value ?? "";
   }
   // txt / md / plain
