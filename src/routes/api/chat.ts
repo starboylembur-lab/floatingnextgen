@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 type Msg = { role: "user" | "assistant" | "system"; content: string };
-type Body = { messages: Msg[]; mode?: "basic" | "standard" | "deep" };
+type Passage = { name: string; content: string; chunk_index: number };
+type Body = { messages: Msg[]; mode?: "basic" | "standard" | "deep"; passages?: Passage[] };
 
 const SYS = {
   basic:
@@ -16,10 +17,26 @@ export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const { messages, mode = "standard" } = (await request.json()) as Body;
+        const { messages, mode = "standard", passages } = (await request.json()) as Body;
         const key = process.env.LOVABLE_API_KEY;
         if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
         if (!Array.isArray(messages)) return new Response("messages required", { status: 400 });
+
+        const contextMsg: Msg | null = Array.isArray(passages) && passages.length > 0
+          ? {
+              role: "system",
+              content:
+                "You have access to the following excerpts from the user's uploaded documents. " +
+                "Use them as the primary source of truth when relevant, and cite them inline as [n] matching the numbering below. " +
+                "If the answer is not in the excerpts, say so plainly.\n\n" +
+                passages
+                  .map(
+                    (p, i) =>
+                      `[${i + 1}] Source: ${p.name} (chunk ${p.chunk_index})\n"""\n${p.content}\n"""`,
+                  )
+                  .join("\n\n"),
+            }
+          : null;
 
         const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
@@ -32,7 +49,11 @@ export const Route = createFileRoute("/api/chat")({
                   ? "google/gemini-3.6-flash"
                   : "google/gemini-3.1-flash-lite",
             stream: true,
-            messages: [{ role: "system", content: SYS[mode] }, ...messages],
+            messages: [
+              { role: "system", content: SYS[mode] },
+              ...(contextMsg ? [contextMsg] : []),
+              ...messages,
+            ],
           }),
         });
         if (!upstream.ok || !upstream.body) {
