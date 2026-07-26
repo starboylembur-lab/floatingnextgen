@@ -96,7 +96,7 @@ export const processDocument = createServerFn({ method: "POST" })
         user_id: userId,
         chunk_index: i,
         content,
-        embedding: toVectorLiteral(embeddings[i]) as unknown as number[],
+        embedding: toVectorLiteral(embeddings[i]),
       }));
 
       for (let i = 0; i < rows.length; i += 50) {
