@@ -30,9 +30,12 @@ const DEEP_MODELS = [
   "google/gemma-3-27b-it:free",
   "meta-llama/llama-3.3-8b-instruct:free",
 ];
+// OpenRouter currently offers NO free image-generation models, so image routing
+// falls back to the cheapest paid image models (fractions of a cent per image).
 const IMAGE_MODELS = [
-  "google/gemini-2.5-flash-image-preview:free",
-  "google/gemini-2.0-flash-exp:free",
+  "google/gemini-2.5-flash-image",
+  "google/gemini-3.1-flash-lite-image",
+  "google/gemini-3.1-flash-image",
 ];
 
 const SYS: Record<string, string> = {
