@@ -12,8 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiGenerateImageRouteImport } from './routes/api/generate-image'
-import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedResearchRouteImport } from './routes/_authenticated/research'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedPremiumRouteImport } from './routes/_authenticated/premium'
@@ -35,16 +33,6 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiGenerateImageRoute = ApiGenerateImageRouteImport.update({
-  id: '/api/generate-image',
-  path: '/api/generate-image',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiChatRoute = ApiChatRouteImport.update({
-  id: '/api/chat',
-  path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedResearchRoute = AuthenticatedResearchRouteImport.update({
@@ -98,8 +86,6 @@ export interface FileRoutesByFullPath {
   '/premium': typeof AuthenticatedPremiumRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/research': typeof AuthenticatedResearchRoute
-  '/api/chat': typeof ApiChatRoute
-  '/api/generate-image': typeof ApiGenerateImageRoute
   '/chat/$chatId': typeof AuthenticatedChatChatIdRoute
 }
 export interface FileRoutesByTo {
@@ -112,8 +98,6 @@ export interface FileRoutesByTo {
   '/premium': typeof AuthenticatedPremiumRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/research': typeof AuthenticatedResearchRoute
-  '/api/chat': typeof ApiChatRoute
-  '/api/generate-image': typeof ApiGenerateImageRoute
   '/chat/$chatId': typeof AuthenticatedChatChatIdRoute
 }
 export interface FileRoutesById {
@@ -128,8 +112,6 @@ export interface FileRoutesById {
   '/_authenticated/premium': typeof AuthenticatedPremiumRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/research': typeof AuthenticatedResearchRoute
-  '/api/chat': typeof ApiChatRoute
-  '/api/generate-image': typeof ApiGenerateImageRoute
   '/_authenticated/chat/$chatId': typeof AuthenticatedChatChatIdRoute
 }
 export interface FileRouteTypes {
@@ -144,8 +126,6 @@ export interface FileRouteTypes {
     | '/premium'
     | '/profile'
     | '/research'
-    | '/api/chat'
-    | '/api/generate-image'
     | '/chat/$chatId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -158,8 +138,6 @@ export interface FileRouteTypes {
     | '/premium'
     | '/profile'
     | '/research'
-    | '/api/chat'
-    | '/api/generate-image'
     | '/chat/$chatId'
   id:
     | '__root__'
@@ -173,8 +151,6 @@ export interface FileRouteTypes {
     | '/_authenticated/premium'
     | '/_authenticated/profile'
     | '/_authenticated/research'
-    | '/api/chat'
-    | '/api/generate-image'
     | '/_authenticated/chat/$chatId'
   fileRoutesById: FileRoutesById
 }
@@ -182,8 +158,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  ApiChatRoute: typeof ApiChatRoute
-  ApiGenerateImageRoute: typeof ApiGenerateImageRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -207,20 +181,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/generate-image': {
-      id: '/api/generate-image'
-      path: '/api/generate-image'
-      fullPath: '/api/generate-image'
-      preLoaderRoute: typeof ApiGenerateImageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/chat': {
-      id: '/api/chat'
-      path: '/api/chat'
-      fullPath: '/api/chat'
-      preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/research': {
@@ -320,8 +280,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  ApiChatRoute: ApiChatRoute,
-  ApiGenerateImageRoute: ApiGenerateImageRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
