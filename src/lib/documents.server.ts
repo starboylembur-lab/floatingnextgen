@@ -1,10 +1,7 @@
-// Server-only helpers for document ingestion (extraction + embedding).
+// Server-only helpers for document ingestion (extraction + chunking).
 // This file is client-blocked via `.server.ts` naming.
 import { extractText, getDocumentProxy } from "unpdf";
 import mammoth from "mammoth";
-
-const GATEWAY_EMBED_URL = "https://ai.gateway.lovable.dev/v1/embeddings";
-const EMBED_MODEL = "google/gemini-embedding-2";
 
 export async function extractTextFromFile(bytes: Uint8Array, mime: string, name: string): Promise<string> {
   const lower = name.toLowerCase();
@@ -46,33 +43,4 @@ export function chunkText(input: string, size = 1000, overlap = 150): string[] {
     i = Math.max(end - overlap, i + 1);
   }
   return chunks;
-}
-
-export async function embedBatch(inputs: string[], apiKey: string): Promise<number[][]> {
-  // Gemini embedding supports up to 100 inputs per request.
-  const out: number[][] = [];
-  for (let i = 0; i < inputs.length; i += 90) {
-    const batch = inputs.slice(i, i + 90);
-    const res = await fetch(GATEWAY_EMBED_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Lovable-API-Key": apiKey,
-      },
-      body: JSON.stringify({ model: EMBED_MODEL, input: batch }),
-    });
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      throw new Error(`Embedding failed (${res.status}): ${text.slice(0, 300)}`);
-    }
-    const json = (await res.json()) as { data: { index: number; embedding: number[] }[] };
-    // Reorder by index to be safe.
-    const ordered = json.data.slice().sort((a, b) => a.index - b.index).map((d) => d.embedding);
-    out.push(...ordered);
-  }
-  return out;
-}
-
-export function toVectorLiteral(v: number[]): string {
-  return "[" + v.map((x) => (Number.isFinite(x) ? x.toString() : "0")).join(",") + "]";
 }
