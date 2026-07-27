@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { streamImage } from "@/lib/streams";
+import { generateImage } from "@/lib/streams";
 import { toast } from "sonner";
 import { Download, Loader2, Sparkles, Wand2 } from "lucide-react";
 
@@ -32,10 +32,9 @@ function Images() {
     abortRef.current = controller;
     const fullPrompt = `${prompt.trim()} — Style: ${style}, aspect ratio ${ratio}, ultra-high fidelity, professional composition.`;
     try {
-      await streamImage("/api/generate-image", { prompt: fullPrompt }, (f) => {
-        setImg(f.dataUrl);
-        if (f.isFinal) setIsFinal(true);
-      }, controller.signal);
+      const { url } = await generateImage(fullPrompt, controller.signal);
+      setImg(url);
+      setIsFinal(true);
     } catch (e) {
       if ((e as Error).name !== "AbortError") toast.error((e as Error).message || "Failed");
     } finally { setBusy(false); }
