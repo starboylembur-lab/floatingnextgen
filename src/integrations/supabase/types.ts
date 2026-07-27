@@ -83,7 +83,7 @@ export type Database = {
           content: string
           created_at: string
           document_id: string
-          embedding: string
+          embedding: string | null
           id: string
           user_id: string
         }
@@ -92,7 +92,7 @@ export type Database = {
           content: string
           created_at?: string
           document_id: string
-          embedding: string
+          embedding?: string | null
           id?: string
           user_id: string
         }
@@ -101,7 +101,7 @@ export type Database = {
           content?: string
           created_at?: string
           document_id?: string
-          embedding?: string
+          embedding?: string | null
           id?: string
           user_id?: string
         }
@@ -260,6 +260,16 @@ export type Database = {
           match_count?: number
           query_embedding: string
         }
+        Returns: {
+          chunk_index: number
+          content: string
+          document_id: string
+          id: string
+          similarity: number
+        }[]
+      }
+      search_document_chunks: {
+        Args: { doc_ids: string[]; match_count?: number; query_text: string }
         Returns: {
           chunk_index: number
           content: string

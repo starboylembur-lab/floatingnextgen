@@ -69,24 +69,18 @@ export const processDocument = createServerFn({ method: "POST" })
     await supabase.from("documents").update({ status: "indexing", error: null }).eq("id", doc.id);
 
     try {
-      const key = process.env.LOVABLE_API_KEY;
-      if (!key) throw new Error("Server missing LOVABLE_API_KEY");
-
       const { data: file, error: dlErr } = await supabase.storage
         .from("documents")
         .download(doc.storage_path);
       if (dlErr || !file) throw new Error(dlErr?.message || "Download failed");
       const bytes = new Uint8Array(await file.arrayBuffer());
 
-      const { extractTextFromFile, chunkText, embedBatch, toVectorLiteral } = await import("./documents.server");
+      const { extractTextFromFile, chunkText } = await import("./documents.server");
       const text = await extractTextFromFile(bytes, doc.mime, doc.name);
       if (!text.trim()) throw new Error("No text extracted from file");
 
       const chunks = chunkText(text);
       if (chunks.length === 0) throw new Error("No chunks produced");
-
-      const embeddings = await embedBatch(chunks, key);
-      if (embeddings.length !== chunks.length) throw new Error("Embedding count mismatch");
 
       // Clear any previous chunks then insert in batches.
       await supabase.from("document_chunks").delete().eq("document_id", doc.id);
@@ -96,7 +90,6 @@ export const processDocument = createServerFn({ method: "POST" })
         user_id: userId,
         chunk_index: i,
         content,
-        embedding: toVectorLiteral(embeddings[i]),
       }));
 
       for (let i = 0; i < rows.length; i += 50) {
@@ -205,8 +198,6 @@ export const retrieveContext = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("Server missing LOVABLE_API_KEY");
 
     const { data: links } = await supabase
       .from("chat_documents")
@@ -215,12 +206,8 @@ export const retrieveContext = createServerFn({ method: "POST" })
     const docIds = (links ?? []).map((l) => l.document_id);
     if (docIds.length === 0) return { passages: [] as { document_id: string; chunk_index: number; content: string; similarity: number; name: string }[] };
 
-    const { embedBatch, toVectorLiteral } = await import("./documents.server");
-    const [queryVec] = await embedBatch([data.query], key);
-    const literal = toVectorLiteral(queryVec);
-
-    const { data: matches, error } = await supabase.rpc("match_document_chunks", {
-      query_embedding: literal as unknown as string,
+    const { data: matches, error } = await supabase.rpc("search_document_chunks", {
+      query_text: data.query,
       doc_ids: docIds,
       match_count: data.matchCount ?? 6,
     });

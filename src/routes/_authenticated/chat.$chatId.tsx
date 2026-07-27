@@ -151,7 +151,6 @@ function ChatDetail() {
     let acc = "";
     try {
       await streamChat(
-        "/api/chat",
         {
           mode,
           messages: [...messages, userMsg].map(({ role, content }) => ({ role, content })),
