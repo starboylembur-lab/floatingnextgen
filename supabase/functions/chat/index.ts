@@ -44,6 +44,12 @@ const SYS: Record<string, string> = {
 type Msg = { role: "user" | "assistant" | "system"; content: string };
 type Passage = { name: string; content: string; chunk_index: number };
 
+const ACCURACY_RULES =
+  "\n\nRules: never hallucinate or invent facts; if uncertain, say so explicitly. Always answer in the user's language. " +
+  "Prefer concise responses and Markdown formatting. Verify calculations before answering. Produce production-ready code. " +
+  "Rely on recent/live knowledge only for news, weather, sports, prices, regulations or recent software updates — not for timeless knowledge. " +
+  "Your reply is capped at roughly 1024 tokens: if the full answer would exceed that, summarise first and ask the user whether to continue.";
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -53,14 +59,43 @@ function json(body: unknown, status = 200) {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/** Upstream failure we surface verbatim to the client. */
+class UpstreamError extends Error {
+  constructor(public status: number, message: string) {
+    super(message);
+  }
+}
+
+function messageForStatus(status: number, raw: string): string {
+  switch (status) {
+    case 401:
+      return "The AI provider rejected the API key (401). Please check that OPENROUTER_API_KEY is valid.";
+    case 402:
+      return "The OpenRouter account has insufficient credits or reached its spending limit (402). Check your OpenRouter balance or the API key's spending limit, then try again.";
+    case 429:
+      return "Too many requests right now (429). Please wait a moment and try again.";
+    case 500:
+      return "The AI provider had an internal error (500). Please try again.";
+    case 503:
+      return "The AI provider is temporarily unavailable (503). Please try again shortly.";
+    default:
+      return raw ? `AI provider error (${status}): ${raw.slice(0, 200)}` : `AI provider error (${status}).`;
+  }
+}
+
+/** The key must exist and look like an OpenRouter key before we spend a round-trip. */
+function validateApiKey(key: string | undefined): key is string {
+  return typeof key === "string" && key.trim().length > 20 && key.trim().startsWith("sk-or-");
+}
+
 async function callOpenRouter(
   apiKey: string,
   payload: Record<string, unknown>,
   models: string[],
 ): Promise<Response> {
-  let lastError = "No model responded";
+  let lastError = new UpstreamError(502, "No model responded");
   for (const model of models) {
-    // Two attempts per model for transient failures.
+    // One retry per model, only for transient failures.
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
         const res = await fetch(OPENROUTER_URL, {
@@ -72,25 +107,35 @@ async function callOpenRouter(
             "X-Title": "Floating Space",
           },
           body: JSON.stringify({ ...payload, model }),
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
         });
         if (res.ok) return res;
         const text = await res.text().catch(() => "");
-        lastError = `${model} → ${res.status}: ${text.slice(0, 300)}`;
-        console.error("[chat] upstream error", lastError);
-        // Retry same model only on transient statuses; otherwise fall through to next model.
-        if (res.status === 429 || res.status >= 500) {
-          await sleep(400 * (attempt + 1));
+        console.error(`[chat] upstream ${res.status} on ${model}: ${text.slice(0, 300)}`);
+        lastError = new UpstreamError(res.status, messageForStatus(res.status, text));
+        // 401/402 are terminal — never retry, never try another model.
+        if (res.status === 401 || res.status === 402) throw lastError;
+        if ((res.status === 429 || res.status >= 500) && attempt === 0) {
+          await sleep(500);
           continue;
         }
         break;
       } catch (err) {
-        lastError = `${model} → ${(err as Error).message}`;
-        console.error("[chat] network error", lastError);
-        await sleep(400 * (attempt + 1));
+        if (err instanceof UpstreamError) throw err;
+        const e = err as Error;
+        const timedOut = e.name === "TimeoutError" || e.name === "AbortError";
+        console.error(`[chat] ${timedOut ? "timeout" : "network error"} on ${model}: ${e.message}`);
+        lastError = new UpstreamError(
+          timedOut ? 504 : 502,
+          timedOut
+            ? "The AI provider timed out after 30 seconds. Please try again."
+            : "Could not reach the AI provider. Please try again.",
+        );
+        if (attempt === 0) await sleep(500);
       }
     }
   }
-  throw new Error(lastError);
+  throw lastError;
 }
 
 Deno.serve(async (req: Request) => {
