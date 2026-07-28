@@ -1,9 +1,9 @@
-import logoAsset from "@/assets/floating-logo.jpeg.asset.json";
+import logoAsset from "@/assets/floating-mark.jpg.asset.json";
 
 export function Logo({ size = 36, glow = true, className = "" }: { size?: number; glow?: boolean; className?: string }) {
   return (
     <div
-      className={`relative shrink-0 overflow-hidden rounded-full ${className}`}
+      className={`relative shrink-0 overflow-hidden rounded-2xl bg-[oklch(0_0_0)] ${className}`}
       style={{ width: size, height: size }}
     >
       <img
@@ -11,13 +11,13 @@ export function Logo({ size = 36, glow = true, className = "" }: { size?: number
         alt="Floating Space"
         width={size}
         height={size}
-        className="h-full w-full object-cover"
+        className="h-full w-full object-contain"
         draggable={false}
       />
       {glow && (
         <div
-          className="pointer-events-none absolute inset-0 rounded-full"
-          style={{ boxShadow: "0 0 30px -4px oklch(0.72 0.2 295 / 0.6), inset 0 0 12px oklch(0.72 0.2 295 / 0.4)" }}
+          className="pointer-events-none absolute inset-0 rounded-2xl"
+          style={{ boxShadow: "0 0 28px -6px oklch(1 0 0 / 0.45), inset 0 0 0 1px oklch(1 0 0 / 0.12)" }}
         />
       )}
     </div>
