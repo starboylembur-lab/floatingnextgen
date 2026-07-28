@@ -301,7 +301,7 @@
 
 /* Bottom nav active glow */
 .nav-active {
-  color: oklch(0.85 0.14 295);
+  color: oklch(0.98 0 0);
 }
 .nav-active .nav-icon-wrap {
   background: linear-gradient(135deg, oklch(1 0 0 / 0.18), oklch(1 0 0 / 0.08));
