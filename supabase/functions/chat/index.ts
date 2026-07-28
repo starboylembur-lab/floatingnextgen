@@ -1,6 +1,6 @@
-// Floating Space — unified AI edge function.
-// Client → this function → OpenRouter (free models only).
-// Never hardcodes keys; everything comes from Supabase secrets.
+// Floating Space — Production V2 unified AI edge function.
+// Client → this function → OpenRouter.
+// The API key is read ONLY from the OPENROUTER_API_KEY environment variable.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 
 const corsHeaders = {
@@ -12,31 +12,25 @@ const corsHeaders = {
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
-// Free models, tried in priority order.
-const CHAT_MODELS = [
-  "openai/gpt-oss-20b:free",
-  "openai/gpt-oss-120b:free",
-  "google/gemma-3-27b-it:free",
-  "meta-llama/llama-3.3-8b-instruct:free",
-];
-const FAST_MODELS = [
-  "meta-llama/llama-3.3-8b-instruct:free",
-  "openai/gpt-oss-20b:free",
-  "google/gemma-3-27b-it:free",
-];
-const DEEP_MODELS = [
-  "openai/gpt-oss-120b:free",
-  "openai/gpt-oss-20b:free",
-  "google/gemma-3-27b-it:free",
-  "meta-llama/llama-3.3-8b-instruct:free",
-];
-// OpenRouter currently offers NO free image-generation models, so image routing
-// falls back to the cheapest paid image models (fractions of a cent per image).
-const IMAGE_MODELS = [
-  "google/gemini-2.5-flash-image",
-  "google/gemini-3.1-flash-lite-image",
-  "google/gemini-3.1-flash-image",
-];
+// --- AI configuration (Production V2) ---
+const PRIMARY_MODEL = "google/gemini-2.5-flash";
+const DEEP_MODEL = "google/gemini-2.5-pro";
+const IMAGE_MODEL = "google/gemini-3.1-flash-image";
+
+const FAST_MODELS = [PRIMARY_MODEL];
+const CHAT_MODELS = [PRIMARY_MODEL];
+const DEEP_MODELS = [DEEP_MODEL, PRIMARY_MODEL];
+const IMAGE_MODELS = [IMAGE_MODEL];
+
+const MAX_TOKENS_CAP = 4096;
+const GEN = {
+  temperature: 0.2,
+  top_p: 0.9,
+  max_tokens: Math.min(1024, MAX_TOKENS_CAP),
+};
+// Only the most recent turns are forwarded, to minimise tokens and latency.
+const MAX_HISTORY_MESSAGES = 12;
+const REQUEST_TIMEOUT_MS = 30_000;
 
 const SYS: Record<string, string> = {
   basic:
