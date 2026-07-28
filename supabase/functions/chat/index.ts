@@ -143,8 +143,17 @@ Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   try {
-    const apiKey = Deno.env.get("OPENROUTER_API_KEY");
-    if (!apiKey) return json({ error: "Server is missing OPENROUTER_API_KEY" }, 500);
+    const apiKey = Deno.env.get("OPENROUTER_API_KEY")?.trim();
+    if (!validateApiKey(apiKey)) {
+      console.error("[chat] OPENROUTER_API_KEY is missing or malformed");
+      return json(
+        {
+          error:
+            "AI is not configured: OPENROUTER_API_KEY is missing or invalid. Add a valid OpenRouter key to the project secrets.",
+        },
+        503,
+      );
+    }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -228,14 +237,19 @@ Deno.serve(async (req: Request) => {
       : null;
 
     const models = mode === "deep" ? DEEP_MODELS : mode === "basic" ? FAST_MODELS : CHAT_MODELS;
+    // Forward only the most recent turns: lower latency, fewer tokens.
+    const recent = messages.slice(-MAX_HISTORY_MESSAGES);
     const upstream = await callOpenRouter(
       apiKey,
       {
         stream: true,
+        temperature: GEN.temperature,
+        top_p: GEN.top_p,
+        max_tokens: GEN.max_tokens,
         messages: [
-          { role: "system", content: SYS[mode] },
+          { role: "system", content: SYS[mode] + ACCURACY_RULES },
           ...(contextMsg ? [contextMsg] : []),
-          ...messages,
+          ...recent,
         ],
       },
       models,
@@ -251,6 +265,10 @@ Deno.serve(async (req: Request) => {
       },
     });
   } catch (err) {
+    if (err instanceof UpstreamError) {
+      console.error(`[chat] upstream failure ${err.status}: ${err.message}`);
+      return json({ error: err.message, status: err.status }, err.status === 401 ? 502 : err.status);
+    }
     console.error("[chat] fatal", (err as Error).message);
     return json({ error: (err as Error).message || "Unexpected error" }, 500);
   }
