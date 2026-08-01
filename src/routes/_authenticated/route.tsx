@@ -15,11 +15,11 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthedLayout() {
   return (
-    <div className="stars relative min-h-screen">
-      <div className="relative z-10 flex min-h-screen">
+    <div className="min-h-screen">
+      <div className="flex min-h-screen">
         <DesktopSidebar />
         <main className="min-w-0 flex-1">
-          <div className="mx-auto w-full max-w-md pb-28 safe-top md:max-w-4xl md:pb-4">
+          <div className="mx-auto w-full max-w-md pb-24 safe-top md:max-w-3xl md:pb-4">
             <Outlet />
           </div>
         </main>
