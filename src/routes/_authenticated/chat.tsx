@@ -68,7 +68,7 @@ function ChatList() {
         </button>
       </div>
 
-      <label className="glass flex items-center gap-2 rounded-2xl px-3 py-2.5">
+      <label className="flex items-center gap-2 rounded-xl border border-border px-3 py-2.5">
         <Search className="h-4 w-4 text-muted-foreground" />
         <input
           value={q} onChange={(e) => setQ(e.target.value)}
@@ -81,29 +81,26 @@ function ChatList() {
         <div className="mt-8 text-center text-sm text-muted-foreground">Loading…</div>
       ) : filtered.length === 0 ? (
         <div className="mt-8 flex flex-col items-center gap-3 text-center">
-          <div className="glass grid h-14 w-14 place-items-center rounded-full"><MessagesSquare className="h-6 w-6 text-primary" /></div>
+          <div className="grid h-14 w-14 place-items-center rounded-full bg-muted"><MessagesSquare className="h-5 w-5 text-muted-foreground" /></div>
           <div className="text-sm font-medium">No conversations yet</div>
-          <p className="max-w-xs text-xs text-muted-foreground">Start a new one — Floating Space remembers everything.</p>
+          <p className="max-w-xs text-xs text-muted-foreground">Start a new one to begin.</p>
           <button onClick={() => create.mutate()} className="btn-primary mt-2 h-10 px-4"><Plus className="h-4 w-4" /> Start chat</button>
         </div>
       ) : (
-        <ul className="flex flex-col gap-1.5">
+        <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border">
           {filtered.map((c) => (
-            <li key={c.id} className="glass group flex items-center gap-3 rounded-2xl p-3 transition-transform active:scale-[0.99]">
-              <Link to="/chat/$chatId" params={{ chatId: c.id }} className="flex flex-1 items-center gap-3">
-                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary/30 to-accent/20">
-                  <MessagesSquare className="h-4 w-4 text-primary" />
-                </div>
+            <li key={c.id} className="flex items-center gap-2 px-3 py-2.5 transition-colors hover:bg-muted">
+              <Link to="/chat/$chatId" params={{ chatId: c.id }} className="flex min-w-0 flex-1 items-center gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-[13.5px] font-medium">{c.title}</div>
                   <div className="text-[11px] text-muted-foreground">
-                    {c.mode.toUpperCase()} · {formatDistanceToNow(new Date(c.updated_at), { addSuffix: true })}
+                    {formatDistanceToNow(new Date(c.updated_at), { addSuffix: true })}
                   </div>
                 </div>
               </Link>
               <button
                 onClick={() => { if (confirm("Delete this chat?")) del.mutate(c.id); }}
-                className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground opacity-60 transition-opacity hover:text-destructive hover:opacity-100"
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted-foreground hover:text-destructive"
                 aria-label="Delete"
               >
                 <Trash2 className="h-3.5 w-3.5" />
