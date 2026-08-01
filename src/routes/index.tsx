@@ -44,34 +44,18 @@ function Landing() {
         </div>
 
         <div className="mt-16 flex flex-1 flex-col items-center text-center">
-          <div className="animate-float-in" style={{ animationDelay: "80ms" }}>
-            <Logo size={128} />
-          </div>
-          <h1 className="mt-8 text-4xl font-semibold leading-[1.05] tracking-tight text-gradient animate-float-in" style={{ animationDelay: "160ms" }}>
-            Intelligence,<br />elegantly infinite.
+          <Logo size={96} />
+          <h1 className="mt-8 text-3xl font-semibold leading-tight tracking-tight">
+            Ask anything.
           </h1>
-          <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground animate-float-in" style={{ animationDelay: "240ms" }}>
-            Floating Space blends deep research, expert reasoning, and generative
-            creativity into a single, weightless surface.
+          <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">
+            Research, reasoning and image generation in one simple assistant.
           </p>
-
-          <div className="mt-10 grid w-full grid-cols-3 gap-2 animate-float-in" style={{ animationDelay: "320ms" }}>
-            {[
-              { i: Brain, t: "Reasoning" },
-              { i: Sparkles, t: "Research" },
-              { i: Zap, t: "Creation" },
-            ].map(({ i: I, t }) => (
-              <div key={t} className="glass rounded-2xl p-3 text-center">
-                <I className="mx-auto h-4 w-4 text-primary" />
-                <div className="mt-1.5 text-[11px] text-muted-foreground">{t}</div>
-              </div>
-            ))}
-          </div>
         </div>
 
-        <div className="mt-8 flex flex-col gap-3 animate-float-in" style={{ animationDelay: "400ms" }}>
+        <div className="mt-8 flex flex-col gap-3">
           <Link to="/auth" className="btn-primary h-12 text-[15px]">
-            Enter Floating Space <ArrowRight className="h-4 w-4" />
+            Get started <ArrowRight className="h-4 w-4" />
           </Link>
           <p className="text-center text-[11px] text-muted-foreground">
             2-day premium trial · unlocked on sign-in
