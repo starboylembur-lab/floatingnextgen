@@ -193,7 +193,7 @@ function ChatDetail() {
       }}
     >
       {/* Header */}
-      <header className="glass-strong sticky top-0 z-10 flex items-center gap-2 px-3 py-2.5">
+      <header className="sticky top-0 z-10 flex items-center gap-2 border-b border-border bg-background px-3 py-2.5">
         <Link to="/chat" className="mobile-only grid h-9 w-9 place-items-center rounded-full text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" />
         </Link>
@@ -207,8 +207,8 @@ function ChatDetail() {
       {attachedDocs.length > 0 && (
         <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center gap-1.5 px-4 pt-2">
           {attachedDocs.map((d) => (
-            <button key={d.id} onClick={() => setPickerOpen(true)} className="glass flex items-center gap-1.5 rounded-full py-1 pl-2.5 pr-2.5 text-[11px]" title="Manage attached documents">
-              <FileText className="h-3 w-3 text-primary" /> {d.name}
+            <button key={d.id} onClick={() => setPickerOpen(true)} className="flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-[11px]" title="Manage attached documents">
+              <FileText className="h-3 w-3" /> {d.name}
             </button>
           ))}
         </div>
@@ -217,10 +217,9 @@ function ChatDetail() {
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 pt-4 pb-2 md:px-8">
         {messages.length === 0 && !streaming && (
-          <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 pt-14 text-center">
-            <Logo size={64} />
-            <div className="font-display text-lg font-semibold text-gradient">How can I help today?</div>
-            <p className="max-w-xs text-xs text-muted-foreground">Ask anything — reasoning, research, code, analysis, creativity.</p>
+          <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 pt-16 text-center">
+            <Logo size={44} />
+            <div className="text-lg font-medium">How can I help today?</div>
           </div>
         )}
         <div className="mx-auto flex max-w-3xl flex-col gap-4">
@@ -251,9 +250,9 @@ function ChatDetail() {
           {attachments.length > 0 && (
             <div className="mb-2 flex flex-wrap gap-1.5">
               {attachments.map((a, idx) => (
-                <span key={idx} className="glass flex items-center gap-1.5 rounded-full py-1 pl-2.5 pr-1 text-[11px]">
-                  <Paperclip className="h-3 w-3 text-primary" /> {a.name}
-                  <button onClick={() => setAttachments((arr) => arr.filter((_, i) => i !== idx))} className="grid h-4 w-4 place-items-center rounded-full text-muted-foreground hover:bg-white/10 hover:text-foreground" aria-label="Remove">
+                <span key={idx} className="flex items-center gap-1.5 rounded-full border border-border py-1 pl-2.5 pr-1 text-[11px]">
+                  <Paperclip className="h-3 w-3" /> {a.name}
+                  <button onClick={() => setAttachments((arr) => arr.filter((_, i) => i !== idx))} className="grid h-4 w-4 place-items-center rounded-full text-muted-foreground hover:text-foreground" aria-label="Remove">
                     <X className="h-2.5 w-2.5" />
                   </button>
                 </span>
@@ -262,7 +261,7 @@ function ChatDetail() {
           )}
           <form
             onSubmit={(e) => { e.preventDefault(); send(input); }}
-            className="glass-strong flex flex-col gap-1.5 rounded-3xl p-2"
+            className="flex flex-col gap-1.5 rounded-xl border border-border p-2"
           >
             <textarea
               ref={inputRef}
@@ -282,37 +281,35 @@ function ChatDetail() {
                 className="hidden"
                 onChange={(e) => { if (e.target.files) readFiles(e.target.files); e.target.value = ""; }}
               />
-              <button type="button" onClick={() => fileRef.current?.click()} className="grid h-9 w-9 place-items-center rounded-full text-muted-foreground hover:bg-white/5 hover:text-foreground" aria-label="Attach file" title="Upload file">
+              <button type="button" onClick={() => fileRef.current?.click()} className="grid h-9 w-9 place-items-center rounded-lg text-muted-foreground hover:text-foreground" aria-label="Attach file" title="Upload file">
                 <Paperclip className="h-4 w-4" />
               </button>
-              <button type="button" onClick={() => setPickerOpen(true)} className={`grid h-9 w-9 place-items-center rounded-full transition-colors ${attachedDocs.length > 0 ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-white/5 hover:text-foreground"}`} aria-label="Chat with document" title="Chat with a document">
+              <button type="button" onClick={() => setPickerOpen(true)} className={`grid h-9 w-9 place-items-center rounded-lg transition-colors ${attachedDocs.length > 0 ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`} aria-label="Chat with document" title="Chat with a document">
                 <FileText className="h-4 w-4" />
               </button>
-              <button type="button" onClick={() => navigate({ to: "/images" })} className="grid h-9 w-9 place-items-center rounded-full text-muted-foreground hover:bg-white/5 hover:text-foreground" aria-label="Generate image" title="Generate image">
+              <button type="button" onClick={() => navigate({ to: "/images" })} className="grid h-9 w-9 place-items-center rounded-lg text-muted-foreground hover:text-foreground" aria-label="Generate image" title="Generate image">
                 <ImageIcon className="h-4 w-4" />
               </button>
-              <button type="button" onClick={() => setMode("deep")} className={`grid h-9 place-items-center rounded-full px-2.5 text-[11px] font-medium transition-colors ${mode === "deep" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-white/5 hover:text-foreground"}`} title="Deep research">
+              <button type="button" onClick={() => setMode("deep")} className={`grid h-9 place-items-center rounded-lg px-2.5 text-[11px] font-medium transition-colors ${mode === "deep" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`} title="Deep research">
                 <Telescope className="mr-1 inline h-3.5 w-3.5" /> Research
               </button>
-              <button type="button" className="grid h-9 w-9 place-items-center rounded-full text-muted-foreground hover:bg-white/5 hover:text-foreground" aria-label="Voice">
+              <button type="button" className="grid h-9 w-9 place-items-center rounded-lg text-muted-foreground hover:text-foreground" aria-label="Voice">
                 <Mic className="h-4 w-4" />
               </button>
               <div className="ml-auto">
                 {streaming ? (
-                  <button type="button" onClick={stop} className="grid h-9 w-9 place-items-center rounded-full bg-destructive/90 text-white" aria-label="Stop">
+                  <button type="button" onClick={stop} className="grid h-9 w-9 place-items-center rounded-lg bg-destructive text-destructive-foreground" aria-label="Stop">
                     <Square className="h-3.5 w-3.5" />
                   </button>
                 ) : (
-                  <button type="submit" disabled={!input.trim() && attachments.length === 0} className="grid h-9 w-9 place-items-center rounded-full disabled:opacity-40" style={{ background: "linear-gradient(135deg, oklch(0.78 0.18 295), oklch(0.75 0.16 260))", boxShadow: "0 8px 24px -8px oklch(0.72 0.2 295 / 0.7)" }} aria-label="Send">
-                    <ArrowUp className="h-4 w-4 text-[oklch(0.15_0.03_275)]" />
+                  <button type="submit" disabled={!input.trim() && attachments.length === 0} className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground disabled:opacity-40" aria-label="Send">
+                    <ArrowUp className="h-4 w-4" />
                   </button>
                 )}
               </div>
             </div>
           </form>
-          <div className="mt-1.5 text-center text-[10px] text-muted-foreground">
-            Enter to send · Shift+Enter for newline · Drop files anywhere to attach
-          </div>
+          <div className="mt-1.5 text-center text-[10px] text-muted-foreground">Enter to send · Shift+Enter for a new line</div>
         </div>
       </div>
 
@@ -337,15 +334,15 @@ function MessageBubble({ msg }: { msg: Msg }) {
         </div>
       )}
       {isUser ? (
-        <div className="max-w-[85%] rounded-3xl rounded-tr-lg px-4 py-2.5 text-[14px]" style={{ background: "linear-gradient(135deg, oklch(0.72 0.18 295), oklch(0.65 0.16 260))", color: "oklch(0.12 0.03 275)", boxShadow: "0 8px 24px -12px oklch(0.72 0.2 295 / 0.6)" }}>
+        <div className="max-w-[85%] rounded-xl bg-primary px-4 py-2.5 text-[14px] text-primary-foreground">
           {msg.content}
         </div>
       ) : (
         <div>
           <Markdown text={msg.content} />
-          <div className="mt-2 flex gap-1 opacity-60">
-            <button onClick={copy} className="grid h-7 w-7 place-items-center rounded-full hover:bg-white/5" aria-label="Copy"><Copy className="h-3 w-3" /></button>
-            <button onClick={share} className="grid h-7 w-7 place-items-center rounded-full hover:bg-white/5" aria-label="Share"><Share2 className="h-3 w-3" /></button>
+          <div className="mt-2 flex gap-1 text-muted-foreground">
+            <button onClick={copy} className="grid h-7 w-7 place-items-center rounded-lg hover:text-foreground" aria-label="Copy"><Copy className="h-3 w-3" /></button>
+            <button onClick={share} className="grid h-7 w-7 place-items-center rounded-lg hover:text-foreground" aria-label="Share"><Share2 className="h-3 w-3" /></button>
           </div>
         </div>
       )}
@@ -360,12 +357,12 @@ function ModeSelector({ value, onChange }: { value: Mode; onChange: (m: Mode) =>
     { k: "deep", label: "Deep" },
   ];
   return (
-    <div className="flex rounded-full bg-white/5 p-0.5 text-[10px] font-semibold uppercase tracking-wider">
+    <div className="flex rounded-lg border border-border p-0.5 text-[11px]">
       {items.map((it) => (
         <button
           key={it.k}
           onClick={() => onChange(it.k)}
-          className={`rounded-full px-2.5 py-1 transition-all ${value === it.k ? "bg-gradient-to-br from-primary/80 to-accent/60 text-[oklch(0.12_0.03_275)] shadow" : "text-muted-foreground"}`}
+          className={`rounded-md px-2.5 py-1 transition-colors ${value === it.k ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
         >
           {it.label}
         </button>
