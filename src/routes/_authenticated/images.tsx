@@ -51,13 +51,11 @@ function Images() {
   return (
     <div className="flex flex-col gap-5 px-4 pb-8 pt-5">
       <div>
-        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-primary">
-          <Wand2 className="h-3 w-3" /> Image Studio
-        </div>
-        <h1 className="text-2xl font-semibold tracking-tight text-gradient">Cinema-grade images, instantly.</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Images</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Describe an image and generate it.</p>
       </div>
 
-      <div className={`glass-strong overflow-hidden rounded-3xl ${aspectClass} grid place-items-center`}>
+      <div className={`overflow-hidden rounded-xl border border-border ${aspectClass} grid place-items-center`}>
         {img ? (
           <img src={img} alt="Generated" className={`h-full w-full object-cover transition-all duration-500 ${isFinal ? "" : "blur-lg scale-105"}`} />
         ) : busy ? (
@@ -66,20 +64,17 @@ function Images() {
             <div className="text-xs">Rendering pixels…</div>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-2 p-6 text-center text-muted-foreground">
-            <Sparkles className="h-6 w-6 text-primary" />
-            <div className="text-xs">Describe what you want to see</div>
-          </div>
+          <div className="p-6 text-center text-xs text-muted-foreground">No image yet</div>
         )}
       </div>
 
       {img && isFinal && (
-        <button onClick={download} className="glass flex items-center justify-center gap-2 rounded-2xl py-2.5 text-sm">
+        <button onClick={download} className="btn-ghost h-11 w-full">
           <Download className="h-4 w-4" /> Download
         </button>
       )}
 
-      <div className="glass-strong flex flex-col gap-3 rounded-3xl p-3">
+      <div className="flex flex-col gap-3 rounded-xl border border-border p-3">
         <textarea
           value={prompt} onChange={(e) => setPrompt(e.target.value)}
           rows={3}
@@ -87,23 +82,23 @@ function Images() {
           className="w-full resize-none bg-transparent px-2 py-1 text-[14px] outline-none placeholder:text-muted-foreground"
         />
         <div>
-          <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Style</div>
+          <div className="mb-1.5 text-xs text-muted-foreground">Style</div>
           <div className="flex flex-wrap gap-1.5">
             {STYLES.map((s) => (
-              <button key={s} onClick={() => setStyle(s)} className={`rounded-full px-3 py-1.5 text-[11px] font-medium ${style === s ? "bg-gradient-to-br from-primary/80 to-accent/60 text-[oklch(0.12_0.03_275)]" : "bg-white/5 text-muted-foreground"}`}>{s}</button>
+              <button key={s} onClick={() => setStyle(s)} className={`rounded-lg border border-border px-3 py-1.5 text-[12px] ${style === s ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{s}</button>
             ))}
           </div>
         </div>
         <div>
-          <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Aspect ratio</div>
+          <div className="mb-1.5 text-xs text-muted-foreground">Aspect ratio</div>
           <div className="flex gap-1.5">
             {RATIOS.map((r) => (
-              <button key={r.k} onClick={() => setRatio(r.k)} className={`flex-1 rounded-full px-3 py-1.5 text-[11px] font-medium ${ratio === r.k ? "bg-gradient-to-br from-primary/80 to-accent/60 text-[oklch(0.12_0.03_275)]" : "bg-white/5 text-muted-foreground"}`}>{r.k} · {r.label}</button>
+              <button key={r.k} onClick={() => setRatio(r.k)} className={`flex-1 rounded-lg border border-border px-3 py-1.5 text-[12px] ${ratio === r.k ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{r.k}</button>
             ))}
           </div>
         </div>
         <button onClick={generate} disabled={!prompt.trim() || busy} className="btn-primary h-11 justify-center">
-          {busy ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating…</> : <><Sparkles className="h-4 w-4" /> Generate image</>}
+          {busy ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating…</> : "Generate image"}
         </button>
       </div>
     </div>
