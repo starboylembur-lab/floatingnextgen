@@ -127,9 +127,9 @@ function DocumentsPage() {
       {/* Dropzone */}
       <button
         onClick={() => fileRef.current?.click()}
-        className="glass flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-white/10 py-8 text-center transition-colors hover:border-primary/40"
+        className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border py-8 text-center"
       >
-        <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-primary/30 to-accent/20">
+        <div className="grid h-12 w-12 place-items-center rounded-2xl bg-muted">
           <Upload className="h-5 w-5 text-primary" />
         </div>
         <div className="text-sm font-medium">Drop a file or tap to upload</div>
@@ -137,13 +137,13 @@ function DocumentsPage() {
       </button>
 
       {uploading && (
-        <div className="glass rounded-2xl p-3">
+        <div className="rounded-xl border border-border p-3">
           <div className="mb-1.5 flex items-center justify-between text-[12px]">
             <span className="truncate pr-2">{uploading.name}</span>
             <span className="text-muted-foreground">{uploading.progress}%</span>
           </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-white/5">
-            <div className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-[width] duration-200" style={{ width: `${uploading.progress}%` }} />
+          <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+            <div className="h-full rounded-full bg-primary transition-[width] duration-200" style={{ width: `${uploading.progress}%` }} />
           </div>
         </div>
       )}
@@ -155,8 +155,8 @@ function DocumentsPage() {
       ) : (
         <ul className="flex flex-col gap-1.5">
           {docs.map((d) => (
-            <li key={d.id} className="glass flex items-center gap-3 rounded-2xl p-3">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary/25 to-accent/15">
+            <li key={d.id} className="flex items-center gap-3 rounded-xl border border-border p-3">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-muted">
                 <FileText className="h-4 w-4 text-primary" />
               </div>
               <div className="min-w-0 flex-1">

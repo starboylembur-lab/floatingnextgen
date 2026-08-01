@@ -44,7 +44,7 @@ function AuthPage() {
           </p>
         </div>
 
-        <div className="mt-8 glass-strong rounded-3xl p-5 animate-float-in">
+        <div className="mt-8 rounded-2xl border border-border p-5">
           <button
             disabled={loading}
             onClick={() => {
@@ -84,12 +84,12 @@ function AuthPage() {
             <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
           </div>
 
-          <div className="mb-4 flex rounded-full bg-white/5 p-1 text-xs">
+          <div className="mb-4 flex rounded-full bg-muted p-1 text-xs">
             {(["email", "phone"] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className={`flex-1 rounded-full py-2 font-medium capitalize transition-all ${tab === t ? "bg-white/10 text-foreground shadow-inner" : "text-muted-foreground"}`}
+                className={`flex-1 rounded-full py-2 font-medium capitalize transition-all ${tab === t ? "bg-background text-foreground" : "text-muted-foreground"}`}
               >
                 {t === "email" ? "Email" : "Phone"}
               </button>
@@ -138,7 +138,7 @@ function EmailForm({ setLoading, loading }: { setLoading: (b: boolean) => void; 
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-3">
-      <label className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 focus-within:border-primary/50">
+      <label className="flex items-center gap-2 rounded-xl border border-border bg-muted px-3 py-2.5 focus-within:border-ring">
         <Mail className="h-4 w-4 text-muted-foreground" />
         <input
           type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
@@ -149,7 +149,7 @@ function EmailForm({ setLoading, loading }: { setLoading: (b: boolean) => void; 
       <input
         type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)}
         placeholder="Password"
-        className="rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm outline-none focus:border-primary/50"
+        className="rounded-xl border border-border bg-muted px-3 py-2.5 text-sm outline-none focus:border-ring"
       />
       <button disabled={loading} className="btn-primary h-11 mt-1">
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : mode === "signup" ? "Create account" : "Sign in"}
@@ -196,7 +196,7 @@ function PhoneForm({ setLoading, loading }: { setLoading: (b: boolean) => void; 
   if (!sent) {
     return (
       <form onSubmit={sendCode} className="flex flex-col gap-3">
-        <label className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 focus-within:border-primary/50">
+        <label className="flex items-center gap-2 rounded-xl border border-border bg-muted px-3 py-2.5 focus-within:border-ring">
           <Phone className="h-4 w-4 text-muted-foreground" />
           <input
             type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)}
@@ -217,7 +217,7 @@ function PhoneForm({ setLoading, loading }: { setLoading: (b: boolean) => void; 
       <input
         inputMode="numeric" required maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
         placeholder="123456"
-        className="rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-center font-mono text-lg tracking-[0.5em] outline-none focus:border-primary/50"
+        className="rounded-xl border border-border bg-muted px-3 py-3 text-center font-mono text-lg tracking-[0.5em] outline-none focus:border-ring"
       />
       <button disabled={loading || code.length < 6} className="btn-primary h-11">
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify & continue"}

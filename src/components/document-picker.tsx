@@ -36,17 +36,17 @@ export function DocumentPicker({ chatId, onClose }: { chatId: string; onClose: (
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm md:items-center" onClick={onClose}>
-      <div className="glass-strong w-full max-w-md rounded-t-3xl border-t border-white/10 p-4 md:rounded-3xl md:border" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-md rounded-t-2xl border border-border bg-background p-4 md:rounded-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="mb-3 flex items-center justify-between">
           <div>
             <div className="text-sm font-semibold">Chat with a document</div>
             <div className="text-[11px] text-muted-foreground">Pick which of your documents to ground answers in.</div>
           </div>
-          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground hover:bg-white/5"><X className="h-4 w-4" /></button>
+          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground "><X className="h-4 w-4" /></button>
         </div>
 
         {docs.length === 0 ? (
-          <Link to="/documents" onClick={onClose} className="glass flex items-center gap-2 rounded-2xl border border-dashed border-white/10 p-4 text-[12px] text-muted-foreground">
+          <Link to="/documents" onClick={onClose} className="flex items-center gap-2 rounded-xl border border-dashed border-border p-4 text-[12px] text-muted-foreground">
             <Upload className="h-4 w-4 text-primary" />
             No documents yet — upload one.
           </Link>
@@ -57,7 +57,7 @@ export function DocumentPicker({ chatId, onClose }: { chatId: string; onClose: (
               const checked = selected.has(d.id);
               return (
                 <li key={d.id}>
-                  <label className={`flex items-center gap-2.5 rounded-xl px-2 py-2 text-[12.5px] ${disabled ? "opacity-60" : "hover:bg-white/5 cursor-pointer"}`}>
+                  <label className={`flex items-center gap-2.5 rounded-xl px-2 py-2 text-[12.5px] ${disabled ? "opacity-60" : " cursor-pointer"}`}>
                     <input
                       type="checkbox"
                       className="h-4 w-4 accent-[oklch(0.75_0.16_295)]"
