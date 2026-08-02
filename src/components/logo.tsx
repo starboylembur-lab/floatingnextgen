@@ -1,4 +1,4 @@
-import logoAsset from "@/assets/floating-mark.jpg.asset.json";
+const LOGO_SRC = "/floating-mark.jpg";
 
 export function Logo({ size = 32, className = "" }: { size?: number; glow?: boolean; className?: string }) {
   return (
@@ -7,7 +7,7 @@ export function Logo({ size = 32, className = "" }: { size?: number; glow?: bool
       style={{ width: size, height: size }}
     >
       <img
-        src={logoAsset.url}
+        src={LOGO_SRC}
         alt="Floating Space"
         width={size}
         height={size}
