@@ -67,10 +67,10 @@ function AuthPage() {
             <GoogleIcon /> Continue with Google
           </button>
 
-            className="btn-ghost h-11 w-full !gap-3 !text-[14px]"
-          >
-            <GoogleIcon /> Continue with Google
-          </button>
+            
+          
+    
+          
 
                 key={t}
                 onClick={() => setTab(t)}
