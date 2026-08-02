@@ -19,21 +19,37 @@ export const Route = createFileRoute("/")({
 function Landing() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
+
   useEffect(() => {
+    // 1. Cek session awal
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/home", replace: true });
-      else setReady(true);
+      if (data.session) {
+        navigate({ to: "/home", replace: true });
+      } else {
+        setReady(true);
+      }
     });
+
+    // 2. Tangkap event login dari Supabase (penting untuk callback OAuth)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
+        navigate({ to: "/home", replace: true });
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
+
   if (!ready) {
     return (
-      <div className="stars flex min-h-screen items-center justify-center">
+      <div className="stars flex min-h-screen items-center justify-center bg-black">
         <div className="animate-pulse-glow"><Logo size={56} /></div>
       </div>
     );
   }
+
   return (
-    <div className="stars relative min-h-screen overflow-hidden">
+    <div className="stars relative min-h-screen overflow-hidden bg-black text-white">
       <div className="relative z-10 mx-auto flex min-h-screen max-w-md flex-col px-6 pb-10 pt-16 safe-top">
         <div className="flex items-center gap-3 animate-float-in">
           <Logo size={40} />
