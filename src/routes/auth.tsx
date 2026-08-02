@@ -47,46 +47,28 @@ function AuthPage() {
         <div className="mt-8 rounded-2xl border border-border p-5">
           <button
             disabled={loading}
-            onClick={() => {
-              // Call synchronously inside the click handler so the browser
-              // treats the popup as user-initiated (avoids popup blockers /
-              // "Sign in was cancelled" errors).
-              const promise = lovable.auth.signInWithOAuth("google", {
-                redirect_uri: window.location.origin,
-              });
+                      <button
+            disabled={loading}
+            onClick={async () => {
               setLoading(true);
-              promise
-                .then((r) => {
-                  if (r.error) {
-                    const msg = r.error.message || "Google sign-in failed";
-                    if (/cancel/i.test(msg)) {
-                      toast.error("Sign in was cancelled. Please allow popups and try again.");
-                    } else {
-                      toast.error(msg);
-                    }
-                    setLoading(false);
-                    return;
-                  }
-                  if (r.redirected) return;
-                  navigate({ to: "/home", replace: true });
-                })
-                .catch((e) => {
-                  toast.error(e?.message || "Google sign-in failed");
-                  setLoading(false);
+              try {
+                const { error } = await supabase.auth.signInWithOAuth({
+                  provider: "google",
+                  options: {
+                    redirectTo: `${window.location.origin}/`,
+                  },
                 });
+                if (error) throw error;
+              } catch (e: any) {
+                toast.error(e?.message || "Google sign-in failed");
+                setLoading(false);
+              }
             }}
             className="btn-ghost h-11 w-full !gap-3 !text-[14px]"
           >
             <GoogleIcon /> Continue with Google
           </button>
 
-          <div className="my-5 flex items-center gap-3 text-[11px] uppercase tracking-widest text-muted-foreground">
-            <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
-          </div>
-
-          <div className="mb-4 flex rounded-full bg-muted p-1 text-xs">
-            {(["email", "phone"] as Tab[]).map((t) => (
-              <button
                 key={t}
                 onClick={() => setTab(t)}
                 className={`flex-1 rounded-full py-2 font-medium capitalize transition-all ${tab === t ? "bg-background text-foreground" : "text-muted-foreground"}`}
