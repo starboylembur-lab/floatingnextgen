@@ -10,19 +10,15 @@ function AuthCallbackPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Menangkap token/session dari URL hasil redirect Google
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
-        console.error("Auth callback error:", error.message);
         navigate({ to: "/auth", replace: true });
         return;
       }
 
       if (session) {
-        // Jika sesi berhasil didapat, lempar mulus ke /home
         navigate({ to: "/home", replace: true });
       } else {
-        // Jika masih kosong, coba tukar kode/sesi dari URL secara manual
         supabase.auth.exchangeCodeForSession(window.location.href).then(({ error: exError }) => {
           if (exError) {
             navigate({ to: "/auth", replace: true });
