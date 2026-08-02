@@ -1,14 +1,17 @@
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Logo } from "@/components/Logo";
-import { Wordmark } from "@/components/Wordmark";
+import { Logo, Wordmark } from "@/components/logo";
 import { GoogleIcon } from "@/components/GoogleIcon";
 
 type Tab = "email" | "phone";
 
-export function AuthPage() {
+export const Route = createFileRoute("/auth")({
+  component: AuthPage,
+});
+
+function AuthPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("email");
   const [loading, setLoading] = useState(false);
