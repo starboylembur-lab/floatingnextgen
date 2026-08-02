@@ -10,30 +10,37 @@ function AuthCallbackPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (error) {
-        navigate({ to: "/auth", replace: true });
-        return;
+    // Tangani parameter kode otorisasi dari URL secara langsung
+    const handleAuthCallback = async () => {
+      const hash = window.location.hash;
+      const searchParams = new URLSearchParams(window.location.search);
+      const code = searchParams.get("code");
+
+      if (code) {
+        await supabase.auth.exchangeCodeForSession(code);
+      } else if (hash && hash.includes("access_token")) {
+        // Jika token dikembalikan via hash
+        await supabase.auth.getSession();
       }
 
+      // Periksa apakah sesi sudah aktif
+      const { data: { session } } = await supabase.auth.getSession();
+      
       if (session) {
         navigate({ to: "/home", replace: true });
       } else {
-        supabase.auth.exchangeCodeForSession(window.location.href).then(({ error: exError }) => {
-          if (exError) {
-            navigate({ to: "/auth", replace: true });
-          } else {
-            navigate({ to: "/home", replace: true });
-          }
-        });
+        // Jika masih gagal, kembalikan ke halaman login
+        navigate({ to: "/auth", replace: true });
       }
-    });
+    };
+
+    handleAuthCallback();
   }, [navigate]);
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mb-4"></div>
-      <p className="text-sm text-gray-400">Verifying your login...</p>
+      <p className="text-sm text-gray-400">Completing login...</p>
     </div>
   );
 }
