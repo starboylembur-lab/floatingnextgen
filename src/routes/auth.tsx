@@ -45,9 +45,7 @@ function AuthPage() {
         </div>
 
         <div className="mt-8 rounded-2xl border border-border p-5">
-          <button
-            disabled={loading}
-                      <button
+                    <button
             disabled={loading}
             onClick={async () => {
               setLoading(true);
@@ -64,6 +62,11 @@ function AuthPage() {
                 setLoading(false);
               }
             }}
+            className="btn-ghost h-11 w-full !gap-3 !text-[14px]"
+          >
+            <GoogleIcon /> Continue with Google
+          </button>
+
             className="btn-ghost h-11 w-full !gap-3 !text-[14px]"
           >
             <GoogleIcon /> Continue with Google
