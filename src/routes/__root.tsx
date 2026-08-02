@@ -131,8 +131,12 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      // Jangan jalankan invalidate jika sedang berada di halaman callback auth agar tidak mantul
+      if (window.location.pathname.includes("/auth/callback")) return;
+
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
