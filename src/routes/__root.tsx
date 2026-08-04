@@ -7,12 +7,14 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { initializeAuth } from "@/lib/auth-session";
+import { Logo } from "@/components/logo";
 
 function NotFoundComponent() {
   return (
@@ -131,18 +133,44 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  const [authReady, setAuthReady] = useState(false);
   
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      // Jangan jalankan invalidate jika sedang berada di halaman callback auth agar tidak mantul
-      if (window.location.pathname.includes("/auth/callback")) return;
+    let active = true;
+    const redirectAuthenticatedEntry = (hasSession: boolean) => {
+      if (!hasSession) return;
+      const path = window.location.pathname;
+      if (path === "/" || path === "/auth" || path === "/auth/callback") {
+        void router.navigate({ to: "/home", replace: true });
+      }
+    };
 
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      redirectAuthenticatedEntry(Boolean(session));
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
     });
-    return () => sub.subscription.unsubscribe();
+
+    void initializeAuth().then((session) => {
+      if (!active) return;
+      redirectAuthenticatedEntry(Boolean(session));
+      setAuthReady(true);
+    });
+
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
   }, [router, queryClient]);
+
+  if (!authReady) {
+    return (
+      <div className="stars flex min-h-screen items-center justify-center bg-background" aria-label="Restoring your session">
+        <Logo size={56} />
+      </div>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

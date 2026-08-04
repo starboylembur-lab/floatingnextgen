@@ -5,6 +5,16 @@ import { consumeAuthFromUrl } from "@/lib/auth-session";
 
 export const Route = createFileRoute("/auth/callback")({
   ssr: false,
+  head: () => ({
+    meta: [
+      { title: "Signing in — Floating Space" },
+      { name: "description", content: "Completing your secure Floating Space sign-in." },
+      { property: "og:title", content: "Signing in — Floating Space" },
+      { property: "og:description", content: "Completing your secure Floating Space sign-in." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AuthCallbackPage,
 });
 
