@@ -1,44 +1,39 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Logo, Wordmark } from "@/components/logo";
-import { ArrowRight } from "lucide-react";
+useEffect(() => {
+  async function init() {
+    // Jika baru kembali dari Google OAuth
+    if (window.location.search.includes("code=")) {
+      const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
 
-export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Floating Space — Your next-generation intelligence assistant" },
-      { name: "description", content: "Ultra-premium AI assistant combining GPT-class reasoning with Perplexity-style deep research. Built by HanStack." },
-      { property: "og:title", content: "Floating Space — Your next-generation intelligence assistant" },
-      { property: "og:description", content: "Ultra-premium AI assistant combining GPT-class reasoning with Perplexity-style deep research. Built by HanStack." },
-    ],
-  }),
-  component: Landing,
-});
-
-function Landing() {
-  const navigate = useNavigate();
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    // 1. Cek session awal
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        navigate({ to: "/home", replace: true });
-      } else {
-        setReady(true);
+      if (error) {
+        console.error(error);
       }
-    });
 
-    // 2. Tangkap event login dari Supabase (penting untuk callback OAuth)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
-        navigate({ to: "/home", replace: true });
-      }
-    });
+      // Bersihkan URL
+      window.history.replaceState({}, "", window.location.pathname);
+    }
 
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    const { data } = await supabase.auth.getSession();
+
+    if (data.session) {
+      navigate({ to: "/home", replace: true });
+    } else {
+      setReady(true);
+    }
+  }
+
+  init();
+
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((event, session) => {
+    if (session) {
+      navigate({ to: "/home", replace: true });
+    }
+  });
+
+  return () => subscription.unsubscribe();
+}, [navigate]);
 
   if (!ready) {
     return (
