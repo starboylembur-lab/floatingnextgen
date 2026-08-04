@@ -1,12 +1,15 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Session } from "@supabase/supabase-js";
 
 /**
  * Consumes Supabase auth artifacts from the current URL.
  * Supports the implicit/hash flow (#access_token=...) and PKCE (?code=...).
  * Returns true when a session exists after processing.
  */
-export async function consumeAuthFromUrl(): Promise<boolean> {
-  if (typeof window === "undefined") return false;
+let initializationPromise: Promise<Session | null> | undefined;
+
+async function initializeAuthSession(): Promise<Session | null> {
+  if (typeof window === "undefined") return null;
 
   try {
     const url = new URL(window.location.href);
@@ -16,23 +19,36 @@ export async function consumeAuthFromUrl(): Promise<boolean> {
     const refresh_token = hash.get("refresh_token");
 
     if (access_token && refresh_token) {
-      const { error } = await supabase.auth.setSession({ access_token, refresh_token });
-      if (error) console.error("[auth] setSession failed", error);
+      const { data, error } = await supabase.auth.setSession({ access_token, refresh_token });
+      if (error) throw error;
       // Strip tokens from the URL so they are not left in history.
       window.history.replaceState({}, "", url.pathname + url.search);
+      return data.session;
     } else if (url.searchParams.has("code")) {
-      const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
-      if (error) console.error("[auth] exchangeCodeForSession failed", error);
+      const { data, error } = await supabase.auth.exchangeCodeForSession(url.searchParams.get("code") ?? "");
+      if (error) throw error;
       url.searchParams.delete("code");
       url.searchParams.delete("state");
       window.history.replaceState({}, "", url.pathname + (url.search || ""));
+      return data.session;
     }
   } catch (err) {
     console.error("[auth] consumeAuthFromUrl", err);
   }
 
   const { data } = await supabase.auth.getSession();
-  return Boolean(data.session?.user);
+  return data.session;
+}
+
+/** Runs once per page load and restores hash, PKCE, or persisted sessions. */
+export function initializeAuth(): Promise<Session | null> {
+  initializationPromise ??= initializeAuthSession();
+  return initializationPromise;
+}
+
+export async function consumeAuthFromUrl(): Promise<boolean> {
+  const session = await initializeAuth();
+  return Boolean(session?.user);
 }
 
 export function hasAuthArtifactsInUrl(): boolean {
