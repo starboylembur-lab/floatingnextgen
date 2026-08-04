@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { toast } from "sonner";
 import { Logo, Wordmark } from "@/components/logo";
 
@@ -19,7 +18,7 @@ function AuthPage() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
-        navigate({ to: "/home", replace: true });
+        navigate({ to: "/", replace: true });
       }
     });
   }, [navigate]);
@@ -47,23 +46,15 @@ function AuthPage() {
             onClick={async () => {
               setLoading(true);
 
-              const result = await lovable.auth.signInWithOAuth("google", {
-                redirect_uri: `${window.location.origin}/auth/callback`,
+              const { error } = await supabase.auth.signInWithOAuth({
+                provider: "google",
+                options: {
+                  redirectTo: `${window.location.origin}/`,
+                },
               });
 
-              if (result.error) {
-                toast.error(result.error.message ?? "Sign in failed");
-                setLoading(false);
-                return;
-              }
-
-              if (result.redirected) return;
-
-              // Tokens received in-place (preview popup flow) — session is set.
-              const { data } = await supabase.auth.getSession();
-              if (data.session) {
-                navigate({ to: "/home", replace: true });
-              } else {
+              if (error) {
+                toast.error(error.message);
                 setLoading(false);
               }
             }}
@@ -106,4 +97,4 @@ function AuthPage() {
       </div>
     </div>
   );
-}
+            }
