@@ -1,7 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { Logo, Wordmark } from "@/components/logo";
 import { ArrowRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -14,16 +16,43 @@ export const Route = createFileRoute("/")({
         content:
           "Ultra-premium AI assistant combining GPT-class reasoning with Perplexity-style deep research.",
       },
-      { property: "og:title", content: "Floating Space — AI Assistant" },
-      { property: "og:description", content: "Research, reason, and create with a premium AI assistant." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Landing,
 });
 
 function Landing() {
+  const navigate = useNavigate();
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (session) {
+        navigate({
+          to: "/home",
+          replace: true,
+        });
+        return;
+      }
+
+      setChecking(false);
+    };
+
+    checkSession();
+  }, [navigate]);
+
+  if (checking) {
+    return (
+      <div className="stars flex min-h-screen items-center justify-center bg-black">
+        <Logo size={56} />
+      </div>
+    );
+  }
+
   return (
     <div className="stars relative min-h-screen overflow-hidden bg-black text-white">
       <div className="relative z-10 mx-auto flex min-h-screen max-w-md flex-col px-6 pb-10 pt-16">
