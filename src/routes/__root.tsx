@@ -1,172 +1,56 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
-  Link,
   createRootRouteWithContext,
-  useRouter,
-  HeadContent,
-  Scripts,
 } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 
-import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "sonner";
+
 import { supabase } from "@/integrations/supabase/client";
 import { initializeAuth } from "@/lib/auth-session";
 import { Logo } from "@/components/logo";
 
-function NotFoundComponent() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  console.error(error);
-  const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
-
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Try again
-          </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Go home
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { name: "theme-color", content: "#120a26" },
-      { title: "Floating Space — Your next-generation intelligence assistant" },
-      { name: "description", content: "Ultra-premium AI assistant combining GPT-class reasoning with Perplexity-style deep research. Built by HanStack." },
-      { name: "author", content: "HanStack" },
-      { property: "og:title", content: "Floating Space — Your next-generation intelligence assistant" },
-      { property: "og:description", content: "Ultra-premium AI assistant combining GPT-class reasoning with Perplexity-style deep research. Built by HanStack." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Floating Space — Your next-generation intelligence assistant" },
-      { name: "twitter:description", content: "Ultra-premium AI assistant combining GPT-class reasoning with Perplexity-style deep research. Built by HanStack." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/73e3b367-52f2-450e-ad28-48698e1b1ca4" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/73e3b367-52f2-450e-ad28-48698e1b1ca4" },
-    ],
-    links: [
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" },
-      { rel: "stylesheet", href: "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css", integrity: "sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
-    ],
-    scripts: [
-      { src: "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js", crossOrigin: "anonymous", defer: true },
-      { src: "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js", crossOrigin: "anonymous", defer: true },
-    ],
-  }),
-  shellComponent: RootShell,
-  component: RootComponent,
-  notFoundComponent: NotFoundComponent,
-  errorComponent: ErrorComponent,
+export const Route =
+  createRootRouteWithContext<{
+    queryClient: QueryClient;
+  }>()({
+    component: RootComponent,
 });
-
-function RootShell({ children }: { children: ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const router = useRouter();
-  const [authReady, setAuthReady] = useState(false);
-  
-  useEffect(() => {
-    let active = true;
-    const redirectAuthenticatedEntry = (hasSession: boolean) => {
-      if (!hasSession) return;
-      const path = window.location.pathname;
-      if (path === "/" || path === "/auth" || path === "/auth/callback") {
-        void router.navigate({ to: "/home", replace: true });
-      }
-    };
 
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-      redirectAuthenticatedEntry(Boolean(session));
-      router.invalidate();
-      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    initializeAuth().finally(() => {
+      if (mounted) setReady(true);
     });
 
-    void initializeAuth().then((session) => {
-      if (!active) return;
-      redirectAuthenticatedEntry(Boolean(session));
-      setAuthReady(true);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (
+        event === "SIGNED_IN" ||
+        event === "TOKEN_REFRESHED" ||
+        event === "USER_UPDATED"
+      ) {
+        queryClient.invalidateQueries();
+      }
     });
 
     return () => {
-      active = false;
-      sub.subscription.unsubscribe();
+      mounted = false;
+      subscription.unsubscribe();
     };
-  }, [router, queryClient]);
+  }, [queryClient]);
 
-  if (!authReady) {
+  if (!ready) {
     return (
-      <div className="stars flex min-h-screen items-center justify-center bg-background" aria-label="Restoring your session">
+      <div className="stars flex min-h-screen items-center justify-center bg-black">
         <Logo size={56} />
       </div>
     );
@@ -175,7 +59,11 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
-      <Toaster theme="dark" position="top-center" richColors closeButton />
+      <Toaster
+        theme="dark"
+        richColors
+        position="top-center"
+      />
     </QueryClientProvider>
   );
 }
