@@ -1,23 +1,12 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 import { Logo, Wordmark } from "@/components/logo";
 
 type Tab = "email" | "phone";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({
-    meta: [
-      { title: "Sign in — Floating Space" },
-      { name: "description", content: "Sign in to Floating Space with Google." },
-      { property: "og:title", content: "Sign in — Floating Space" },
-      { property: "og:description", content: "Sign in to Floating Space with Google." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
   component: AuthPage,
 });
 
@@ -29,7 +18,7 @@ function AuthPage() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
-        navigate({ to: "/home", replace: true });
+        navigate({ to: "/", replace: true });
       }
     });
   }, [navigate]);
@@ -57,8 +46,11 @@ function AuthPage() {
             onClick={async () => {
               setLoading(true);
 
-               const { error } = await lovable.auth.signInWithOAuth("google", {
-                 redirect_uri: "https://floatingspace.my.id/auth/callback",
+              const { error } = await supabase.auth.signInWithOAuth({
+                provider: "google",
+                options: {
+                  redirectTo: `${window.location.origin}/`,
+                },
               });
 
               if (error) {
