@@ -130,9 +130,9 @@ function ChatDetail() {
     // Persist user message + update chat metadata
     await supabase.from("messages").insert({ chat_id: chatId, user_id: u.user.id, role: "user", content: composed });
     if (messages.length === 0) {
-      await supabase.from("chats").update({ title: text.slice(0, 60), mode }).eq("id", chatId);
+      await supabase.from("conversations").update({ title: text.slice(0, 60), mode }).eq("id", conversationId);
     } else {
-      await supabase.from("chats").update({ mode, updated_at: new Date().toISOString() }).eq("id", chatId);
+      await supabase.from("conversations").update({ mode, updated_at: new Date().toISOString() }).eq("id", conversationId);
     }
 
     // If documents are attached to this chat, fetch relevant passages first.
