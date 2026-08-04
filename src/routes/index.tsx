@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { consumeAuthFromUrl, hasAuthArtifactsInUrl } from "@/lib/auth-session";
 import { Logo, Wordmark } from "@/components/logo";
 import { ArrowRight } from "lucide-react";
 
@@ -28,31 +29,25 @@ function Landing() {
   useEffect(() => {
     const init = async () => {
       try {
-        // Tukarkan OAuth code menjadi session jika baru kembali dari Google
-        const url = new URL(window.location.href);
+        // OAuth can land here with #access_token=... (implicit) or ?code=... (PKCE).
+        const hadArtifacts = hasAuthArtifactsInUrl();
+        const authed = await consumeAuthFromUrl();
 
-        if (url.searchParams.has("code")) {
-          const { error } = await supabase.auth.exchangeCodeForSession(
-            window.location.href
-          );
-
-          if (error) {
-            console.error(error);
-          }
-
-          // Bersihkan query ?code=
-          window.history.replaceState({}, "", "/");
-        }
-
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (session) {
+        if (authed) {
           navigate({
             to: "/home",
             replace: true,
           });
+          return;
+        }
+
+        if (hadArtifacts) {
+          // Still processing — never bounce to /auth mid-flight.
+          setTimeout(async () => {
+            const { data } = await supabase.auth.getSession();
+            if (data.session) navigate({ to: "/home", replace: true });
+            else setReady(true);
+          }, 800);
           return;
         }
 
