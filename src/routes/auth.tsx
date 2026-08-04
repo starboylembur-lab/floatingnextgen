@@ -18,7 +18,10 @@ function AuthPage() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
-        navigate({ to: "/", replace: true });
+        navigate({
+          to: "/home",
+          replace: true,
+        });
       }
     });
   }, [navigate]);
@@ -26,7 +29,10 @@ function AuthPage() {
   return (
     <div className="stars relative min-h-screen bg-black text-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="relative z-10 mx-auto w-full max-w-md px-4">
-        <Link to="/" className="btn-ghost mb-6 inline-flex items-center gap-2 text-sm">
+        <Link
+          to="/"
+          className="btn-ghost mb-6 inline-flex items-center gap-2 text-sm"
+        >
           ← Back to home
         </Link>
 
@@ -35,6 +41,7 @@ function AuthPage() {
           <h1 className="mt-5 text-2xl font-bold">
             Welcome to <Wordmark />
           </h1>
+
           <p className="mt-1.5 text-sm text-gray-400">
             Sign in to activate your 2-day free trial
           </p>
@@ -49,7 +56,7 @@ function AuthPage() {
               const { error } = await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                  redirectTo: `${window.location.origin}/`,
+                  redirectTo: `${window.location.origin}/auth/callback`,
                 },
               });
 
@@ -82,7 +89,9 @@ function AuthPage() {
                 key={t}
                 onClick={() => setTab(t)}
                 className={`flex-1 rounded-md py-1.5 text-xs font-medium capitalize transition-all ${
-                  tab === t ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"
+                  tab === t
+                    ? "bg-white/10 text-white"
+                    : "text-gray-400 hover:text-white"
                 }`}
               >
                 {t === "email" ? "Email" : "Phone"}
