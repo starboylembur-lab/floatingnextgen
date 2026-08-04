@@ -19,19 +19,20 @@ async function initializeAuthSession(): Promise<Session | null> {
     const refresh_token = hash.get("refresh_token");
 
     if (access_token && refresh_token) {
-      const { data, error } = await supabase.auth.setSession({ access_token, refresh_token });
-      if (error) throw error;
-      // Strip tokens from the URL so they are not left in history.
-      window.history.replaceState({}, "", url.pathname + url.search);
-      return data.session;
-    } else if (url.searchParams.has("code")) {
-      const { data, error } = await supabase.auth.exchangeCodeForSession(url.searchParams.get("code") ?? "");
-      if (error) throw error;
-      url.searchParams.delete("code");
-      url.searchParams.delete("state");
-      window.history.replaceState({}, "", url.pathname + (url.search || ""));
-      return data.session;
-    }
+  console.log("Found OAuth hash");
+  const { data, error } = await supabase.auth.setSession({
+    access_token,
+    refresh_token,
+  });
+
+  console.log("setSession:", data, error);
+
+  if (error) throw error;
+
+  window.history.replaceState({}, "", url.pathname);
+
+  return data.session;
+}
   } catch (err) {
     console.error("[auth] consumeAuthFromUrl", err);
   }
