@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { Logo, Wordmark } from "@/components/logo";
 import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { initializeAuth } from "@/lib/auth-session";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -26,23 +26,16 @@ function Landing() {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
+    initializeAuth().then((session) => {
       if (session) {
         navigate({
           to: "/home",
           replace: true,
         });
-        return;
+      } else {
+        setChecking(false);
       }
-
-      setChecking(false);
-    };
-
-    checkSession();
+    });
   }, [navigate]);
 
   if (checking) {
