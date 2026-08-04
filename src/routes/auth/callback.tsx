@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { consumeAuthFromUrl } from "@/lib/auth-session";
 
 export const Route = createFileRoute("/auth/callback")({
   ssr: false,
@@ -38,25 +39,17 @@ function AuthCallbackPage() {
           return;
         }
 
-        // 1. Implicit flow: tokens delivered in the URL hash.
-        const access_token = hash.get("access_token");
-        const refresh_token = hash.get("refresh_token");
-        if (access_token && refresh_token) {
-          await supabase.auth.setSession({ access_token, refresh_token });
+        // Handles both the hash (#access_token) and PKCE (?code=) flows.
+        const authed = await consumeAuthFromUrl();
+        if (authed) {
+          finish("/home");
+          return;
         }
-
-        // 2. PKCE flow: ?code= must be exchanged for a session.
-        const code = url.searchParams.get("code");
-        if (code) {
-          await supabase.auth.exchangeCodeForSession(window.location.href);
-        }
-
-        // 3. Whatever path we came through, confirm the session exists.
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        finish(session ? "/home" : "/auth");
+        // Give Supabase a brief moment to hydrate/emit before giving up.
+        setTimeout(async () => {
+          const { data } = await supabase.auth.getSession();
+          finish(data.session ? "/home" : "/auth");
+        }, 800);
       } catch (err) {
         console.error("[auth/callback]", err);
         const {
