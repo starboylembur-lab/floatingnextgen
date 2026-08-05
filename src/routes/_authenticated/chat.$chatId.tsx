@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/chat/$chatId")({
 type Msg = { id: string; role: "user" | "assistant" | "system"; content: string };
 
 function ChatDetail() {
-  const { chatId } = Route.useParams();
+  const { chatId: conversationId } = Route.useParams();
   const search = Route.useSearch();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -68,9 +68,9 @@ function ChatDetail() {
   }
 
   const { data: chat } = useQuery({
-    queryKey: ["chat", chatId],
+    queryKey: ["conversation", conversationId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("chats").select("*").eq("id", chatId).maybeSingle();
+      const { data, error } = await supabase.from("conversations").select("*").eq("id", conversationId).maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -82,12 +82,12 @@ function ChatDetail() {
 
   const { data: attachedDocs = [] } = useQuery({
     queryKey: ["chat-documents", chatId],
-    queryFn: () => getChatDocuments({ data: { chatId } }),
+    queryFn: () => getChatDocuments({ data: { conversationId } }),
   });
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase.from("messages").select("*").eq("chat_id", chatId).order("created_at", { ascending: true });
+      const { data, error } = await supabase.from("messages").select("*").eq("conversation_id", chatId).order("created_at", { ascending: true });
       if (error) { toast.error(error.message); return; }
       setMessages(data as Msg[]);
     })();
@@ -104,7 +104,7 @@ function ChatDetail() {
     if (search.q && messages.length === 0 && !streaming) {
       autoSentRef.current = true;
       send(search.q);
-      navigate({ to: "/chat/$chatId", params: { chatId }, search: {}, replace: true });
+      navigate({ to: "/chat/$chatId", params: { conversationId }, search: {}, replace: true });
     }
   }, [search.q, messages.length, streaming]);
 
@@ -128,7 +128,7 @@ function ChatDetail() {
     setStreamText("");
 
     // Persist user message + update chat metadata
-    await supabase.from("messages").insert({ chat_id: chatId, user_id: u.user.id, role: "user", content: composed });
+    await supabase.from("messages").insert({ conversation_id: conversationId, user_id: u.user.id, role: "user", content: composed });
     if (messages.length === 0) {
       await supabase.from("conversations").update({ title: text.slice(0, 60), mode }).eq("id", conversationId);
     } else {
@@ -139,7 +139,7 @@ function ChatDetail() {
     let passages: { name: string; content: string; chunk_index: number }[] = [];
     if (attachedDocs.length > 0) {
       try {
-        const { passages: p } = await retrieveContext({ data: { chatId, query: text, matchCount: 6 } });
+        const { passages: p } = await retrieveContext({ data: { conversationId, query: text, matchCount: 6 } });
         passages = p.map((x) => ({ name: x.name, content: x.content, chunk_index: x.chunk_index }));
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Retrieval failed");
@@ -168,7 +168,7 @@ function ChatDetail() {
         const asst: Msg = { id: crypto.randomUUID(), role: "assistant", content: acc };
         setMessages((m) => [...m, asst]);
         setStreamText("");
-        await supabase.from("messages").insert({ chat_id: chatId, user_id: u.user.id, role: "assistant", content: acc });
+        await supabase.from("messages").insert({ conversation_id: conversationId, user_id: u.user.id, role: "assistant", content: acc });
         addCapacity({ data: mode === "deep" ? 20 : mode === "standard" ? 10 : 5 }).then(() => qc.invalidateQueries({ queryKey: ["user-stats"] })).catch(() => {});
       }
     }
@@ -201,7 +201,7 @@ function ChatDetail() {
           <div className="truncate text-[13px] font-medium">{chat?.title ?? "Conversation"}</div>
           <div className="text-[10px] text-muted-foreground">Floating Space · {modeMeta[mode].label}</div>
         </div>
-        <ModeSelector value={mode} onChange={(m) => { setMode(m); supabase.from("chats").update({ mode: m }).eq("id", chatId); }} />
+        <ModeSelector value={mode} onChange={(m) => { setMode(m); supabase.from("conversations").update({ mode: m }).eq("id", conversationId); }} />
       </header>
 
       {attachedDocs.length > 0 && (
