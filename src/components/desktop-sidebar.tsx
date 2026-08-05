@@ -25,7 +25,7 @@ export function DesktopSidebar() {
   const params = useParams({
     strict: false,
   }) as {
-    chatId?: string;
+    conversationId?: string;
   };
 
   const [q, setQ] = useState("");
@@ -103,9 +103,9 @@ export function DesktopSidebar() {
       });
 
       navigate({
-        to: "/chat/$chatId",
+        to: "/chat/$conversationId",
         params: {
-          chatId: conversation.id,
+          conversationId: conversation.id,
         },
       });
     },
@@ -212,12 +212,12 @@ export function DesktopSidebar() {
         {filtered.map((conversation) => (
           <div key={conversation.id} className="group relative">
             <Link
-              to="/chat/$chatId"
+              to="/chat/$conversationId"
               params={{
-                chatId: conversation.id,
+                conversationId: conversation.id,
               }}
               className={`block truncate rounded-lg px-2.5 py-2 pr-8 text-[13px] ${
-                params.chatId === conversation.id
+                params.conversationId === conversation.id
                   ? "bg-muted text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               }`}

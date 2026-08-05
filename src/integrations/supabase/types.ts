@@ -35,14 +35,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "chat_documents_chat_id_fkey"
+            foreignKeyName: "conversation_documents_conversation_id_fkey"
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "chat_documents_document_id_fkey"
+            foreignKeyName: "conversation_documents_document_id_fkey"
             columns: ["document_id"]
             isOneToOne: false
             referencedRelation: "documents"
@@ -184,7 +184,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "messages_chat_id_fkey"
+            foreignKeyName: "messages_conversation_id_fkey"
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"

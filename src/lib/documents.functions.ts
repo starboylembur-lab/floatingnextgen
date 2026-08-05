@@ -147,38 +147,38 @@ export const deleteDocument = createServerFn({ method: "POST" })
 
 export const attachDocumentsToChat = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { chatId: string; documentIds: string[] }) => {
-    if (!input?.chatId) throw new Error("chatId required");
+  .inputValidator((input: { conversationId: string; documentIds: string[] }) => {
+    if (!input?.conversationId) throw new Error("conversationId required");
     if (!Array.isArray(input.documentIds)) throw new Error("documentIds required");
     return input;
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     // Remove existing links then insert new ones.
-    await supabase.from("chat_documents").delete().eq("chat_id", data.chatId);
+    await supabase.from("conversation_documents").delete().eq("conversation_id", data.conversationId);
     if (data.documentIds.length === 0) return { ok: true };
     const rows = data.documentIds.map((document_id) => ({
-      chat_id: data.chatId,
+      conversation_id: data.conversationId,
       document_id,
       user_id: userId,
     }));
-    const { error } = await supabase.from("chat_documents").insert(rows);
+    const { error } = await supabase.from("conversation_documents").insert(rows);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
 
 export const getChatDocuments = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { chatId: string }) => {
-    if (!input?.chatId) throw new Error("chatId required");
+  .inputValidator((input: { conversationId: string }) => {
+    if (!input?.conversationId) throw new Error("conversationId required");
     return input;
   })
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const { data: links, error } = await supabase
-      .from("chat_documents")
+      .from("conversation_documents")
       .select("document_id, documents(id, name, status, mime)")
-      .eq("chat_id", data.chatId);
+      .eq("conversation_id", data.conversationId);
     if (error) throw new Error(error.message);
     return (links ?? []).map((l) => l.documents).filter(Boolean) as {
       id: string;
@@ -191,8 +191,8 @@ export const getChatDocuments = createServerFn({ method: "GET" })
 // Retrieves the top matching chunks across the chat's attached documents for a given query.
 export const retrieveContext = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { chatId: string; query: string; matchCount?: number }) => {
-    if (!input?.chatId) throw new Error("chatId required");
+  .inputValidator((input: { conversationId: string; query: string; matchCount?: number }) => {
+    if (!input?.conversationId) throw new Error("conversationId required");
     if (!input?.query) throw new Error("query required");
     return input;
   })
@@ -200,9 +200,9 @@ export const retrieveContext = createServerFn({ method: "POST" })
     const { supabase } = context;
 
     const { data: links } = await supabase
-      .from("chat_documents")
+      .from("conversation_documents")
       .select("document_id")
-      .eq("chat_id", data.chatId);
+      .eq("conversation_id", data.conversationId);
     const docIds = (links ?? []).map((l) => l.document_id);
     if (docIds.length === 0) return { passages: [] as { document_id: string; chunk_index: number; content: string; similarity: number; name: string }[] };
 

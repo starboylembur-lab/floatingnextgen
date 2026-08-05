@@ -91,9 +91,9 @@ function Home() {
       });
 
       navigate({
-        to: "/chat/$chatId",
+        to: "/chat/$conversationId",
         params: {
-          chatId: conversation.id,
+          conversationId: conversation.id,
         },
       });
     },

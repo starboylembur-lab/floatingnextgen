@@ -15,7 +15,7 @@ type Mode = "basic" | "standard" | "deep";
 
 type SearchParams = { q?: string; mode?: Mode };
 
-export const Route = createFileRoute("/_authenticated/chat/$chatId")({
+export const Route = createFileRoute("/_authenticated/chat/$conversationId")({
   validateSearch: (s: Record<string, unknown>): SearchParams => ({
     q: typeof s.q === "string" ? s.q : undefined,
     mode: s.mode === "basic" || s.mode === "deep" || s.mode === "standard" ? s.mode : undefined,
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/chat/$chatId")({
 type Msg = { id: string; role: "user" | "assistant" | "system"; content: string };
 
 function ChatDetail() {
-  const { chatId: conversationId } = Route.useParams();
+  const { conversationId } = Route.useParams();
   const search = Route.useSearch();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -81,17 +81,17 @@ function ChatDetail() {
   }, [chat?.mode]);
 
   const { data: attachedDocs = [] } = useQuery({
-    queryKey: ["chat-documents", chatId],
+    queryKey: ["conversation-documents", conversationId],
     queryFn: () => getChatDocuments({ data: { conversationId } }),
   });
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase.from("messages").select("*").eq("conversation_id", chatId).order("created_at", { ascending: true });
+      const { data, error } = await supabase.from("messages").select("*").eq("conversation_id", conversationId).order("created_at", { ascending: true });
       if (error) { toast.error(error.message); return; }
       setMessages(data as Msg[]);
     })();
-  }, [chatId]);
+  }, [conversationId]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -104,11 +104,11 @@ function ChatDetail() {
     if (search.q && messages.length === 0 && !streaming) {
       autoSentRef.current = true;
       send(search.q);
-      navigate({ to: "/chat/$chatId", params: { conversationId }, search: {}, replace: true });
+      navigate({ to: "/chat/$conversationId", params: { conversationId }, search: {}, replace: true });
     }
   }, [search.q, messages.length, streaming]);
 
-  useEffect(() => { inputRef.current?.focus(); }, [chatId]);
+  useEffect(() => { inputRef.current?.focus(); }, [conversationId]);
 
   async function send(text: string) {
     if ((!text.trim() && attachments.length === 0) || streaming) return;
@@ -313,7 +313,7 @@ function ChatDetail() {
         </div>
       </div>
 
-      {pickerOpen && <DocumentPicker chatId={chatId} onClose={() => setPickerOpen(false)} />}
+      {pickerOpen && <DocumentPicker conversationId={conversationId} onClose={() => setPickerOpen(false)} />}
     </div>
   );
 }

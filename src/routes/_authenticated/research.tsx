@@ -23,13 +23,13 @@ function Research() {
     mutationFn: async (text: string) => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Not signed in");
-      const { data, error } = await supabase.from("chats").insert({
+      const { data, error } = await supabase.from("conversations").insert({
         user_id: u.user.id, title: text.slice(0, 60), mode: "deep",
       }).select().single();
       if (error) throw error;
       return { id: data.id, text };
     },
-    onSuccess: ({ id, text }) => navigate({ to: "/chat/$chatId", params: { chatId: id }, search: { q: text, mode: "deep" } }),
+    onSuccess: ({ id, text }) => navigate({ to: "/chat/$conversationId", params: { conversationId: id }, search: { q: text, mode: "deep" } }),
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
