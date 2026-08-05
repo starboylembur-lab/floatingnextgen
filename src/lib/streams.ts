@@ -1,23 +1,39 @@
 // Client transport for AI requests.
-// Every AI call goes: client → Supabase Edge Function "chat" → OpenRouter.
+// Every AI call goes: client → Supabase Edge Function "ai-chat".
+
 import { supabase } from "@/integrations/supabase/client";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
-const CHAT_FN_URL = `${SUPABASE_URL}/functions/v1/chat`;
+const SUPABASE_KEY =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+
+// Ganti dari "chat" menjadi "ai-chat"
+const CHAT_FN_URL = `${SUPABASE_URL}/functions/v1/ai-chat`;
 
 const REQUEST_TIMEOUT_MS = 30_000;
 
 /** Combines the caller signal with a 30s timeout. */
 function withTimeout(signal?: AbortSignal): AbortSignal {
   const timeout = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
-  return signal ? AbortSignal.any([signal, timeout]) : timeout;
+  return signal
+    ? AbortSignal.any([signal, timeout])
+    : timeout;
 }
 
-async function edgeFetch(body: unknown, signal?: AbortSignal): Promise<Response> {
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
-  if (!token) throw new Error("You need to be signed in.");
+async function edgeFetch(
+  body: unknown,
+  signal?: AbortSignal
+): Promise<Response> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  const token = session?.access_token;
+
+  if (!token) {
+    throw new Error("You need to be signed in.");
+  }
+
   const res = await fetch(CHAT_FN_URL, {
     method: "POST",
     headers: {
@@ -28,81 +44,22 @@ async function edgeFetch(body: unknown, signal?: AbortSignal): Promise<Response>
     body: JSON.stringify(body),
     signal: withTimeout(signal),
   });
+
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     let message = text || `HTTP ${res.status}`;
+
     try {
       const parsed = JSON.parse(text);
-      if (parsed?.error) message = parsed.error;
-    } catch { /* keep raw text */ }
+      if (parsed?.error) {
+        message = parsed.error;
+      }
+    } catch {}
+
     throw new Error(message);
   }
+
   return res;
 }
 
 export type ChatDelta = string;
-
-export type ChatRequest = {
-  mode?: "basic" | "standard" | "deep";
-  messages: { role: "user" | "assistant" | "system"; content: string }[];
-  passages?: { name: string; content: string; chunk_index: number }[];
-};
-
-export async function streamChat(
-  body: ChatRequest,
-  onDelta: (chunk: ChatDelta) => void,
-  signal?: AbortSignal,
-): Promise<void> {
-  const res = await edgeFetch({ kind: "chat", ...body }, signal);
-  if (!res.body) throw new Error("Empty response");
-  const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
-  let buf = "";
-  try {
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buf += value;
-      let idx;
-      while ((idx = buf.indexOf("\n")) !== -1) {
-        const line = buf.slice(0, idx).replace(/\r$/, "");
-        buf = buf.slice(idx + 1);
-        if (!line.startsWith("data:")) continue;
-        const data = line.slice(5).trim();
-        if (data === "[DONE]") return;
-        try {
-          const j = JSON.parse(data);
-          const delta = j.choices?.[0]?.delta?.content ?? j.choices?.[0]?.message?.content ?? "";
-          if (delta) onDelta(delta);
-        } catch { /* ignore keep-alive comments */ }
-      }
-    }
-  } finally {
-    reader.cancel().catch(() => {});
-  }
-}
-
-export type GeneratedImage = { url: string; path: string | null; expiresIn: number };
-
-// Cache of completed generations + in-flight requests, so repeating the exact
-// same prompt neither re-bills the provider nor fires duplicate requests.
-const imageCache = new Map<string, GeneratedImage>();
-const imageInFlight = new Map<string, Promise<GeneratedImage>>();
-
-// Generates an image and returns a 24h signed URL from the `generated-images` bucket.
-export async function generateImage(prompt: string, signal?: AbortSignal): Promise<GeneratedImage> {
-  const key = prompt.trim();
-  const cached = imageCache.get(key);
-  if (cached) return cached;
-  const pending = imageInFlight.get(key);
-  if (pending) return pending;
-
-  const request = (async () => {
-    const res = await edgeFetch({ kind: "image", prompt: key }, signal);
-    const result = (await res.json()) as GeneratedImage;
-    imageCache.set(key, result);
-    return result;
-  })().finally(() => imageInFlight.delete(key));
-
-  imageInFlight.set(key, request);
-  return request;
-}
