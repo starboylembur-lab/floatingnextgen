@@ -30,7 +30,7 @@ function ChatList() {
   const qc = useQueryClient();
   const [q, setQ] = useState("");
 
-  const { data: chats = [], isLoading } = useQuery({
+  const { data: conversations = [], isLoading } = useQuery({
     queryKey: ["conversations"],
     queryFn: async () => {
       const {
@@ -113,10 +113,10 @@ function ChatList() {
   });
 
   const filtered = q
-    ? chats.filter((c) =>
+    ? conversations.filter((c) =>
         c.title?.toLowerCase().includes(q.toLowerCase())
       )
-    : chats;
+    : conversations;
 
   return (
     <div className="flex flex-col gap-4 px-4 pb-8 pt-5">
