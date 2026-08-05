@@ -14,21 +14,21 @@ export type Database = {
   }
   public: {
     Tables: {
-      chat_documents: {
+      conversation_documents: {
         Row: {
-          chat_id: string
+          conversation_id: string
           created_at: string
           document_id: string
           user_id: string
         }
         Insert: {
-          chat_id: string
+          conversation_id: string
           created_at?: string
           document_id: string
           user_id: string
         }
         Update: {
-          chat_id?: string
+          conversation_id?: string
           created_at?: string
           document_id?: string
           user_id?: string
@@ -36,9 +36,9 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "chat_documents_chat_id_fkey"
-            columns: ["chat_id"]
+            columns: ["conversation_id"]
             isOneToOne: false
-            referencedRelation: "chats"
+            referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
           {
@@ -50,7 +50,7 @@ export type Database = {
           },
         ]
       }
-      chats: {
+      conversations: {
         Row: {
           created_at: string
           id: string
@@ -159,24 +159,24 @@ export type Database = {
       }
       messages: {
         Row: {
-          chat_id: string
           content: string
+          conversation_id: string
           created_at: string
           id: string
           role: string
           user_id: string
         }
         Insert: {
-          chat_id: string
           content: string
+          conversation_id: string
           created_at?: string
           id?: string
           role: string
           user_id: string
         }
         Update: {
-          chat_id?: string
           content?: string
+          conversation_id?: string
           created_at?: string
           id?: string
           role?: string
@@ -185,9 +185,9 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "messages_chat_id_fkey"
-            columns: ["chat_id"]
+            columns: ["conversation_id"]
             isOneToOne: false
-            referencedRelation: "chats"
+            referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
         ]
