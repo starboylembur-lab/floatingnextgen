@@ -1,3 +1,13 @@
+import { supabase } from "@/integrations/supabase/client";
+import type { Session } from "@supabase/supabase-js";
+
+/**
+ * Restore OAuth session from URL hash (#access_token)
+ * or existing persisted session.
+ */
+
+let initializationPromise: Promise<Session | null> | undefined;
+
 async function initializeAuthSession(): Promise<Session | null> {
   if (typeof window === "undefined") return null;
 
@@ -29,6 +39,7 @@ async function initializeAuthSession(): Promise<Session | null> {
 
       if (error) throw error;
 
+      // Hapus token dari URL
       window.history.replaceState({}, "", url.pathname);
 
       return data.session;
@@ -61,4 +72,34 @@ async function initializeAuthSession(): Promise<Session | null> {
   );
 
   return data.session;
+}
+
+/**
+ * Initialize auth once.
+ */
+export function initializeAuth(): Promise<Session | null> {
+  initializationPromise ??= initializeAuthSession();
+  return initializationPromise;
+}
+
+/**
+ * Consume OAuth callback.
+ */
+export async function consumeAuthFromUrl(): Promise<boolean> {
+  const session = await initializeAuth();
+  return !!session?.user;
+}
+
+/**
+ * Detect OAuth callback.
+ */
+export function hasAuthArtifactsInUrl(): boolean {
+  if (typeof window === "undefined") return false;
+
+  const url = new URL(window.location.href);
+
+  return (
+    url.hash.includes("access_token=") ||
+    url.searchParams.has("code")
+  );
 }
