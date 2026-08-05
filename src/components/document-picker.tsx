@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 
 type Doc = { id: string; name: string; status: string };
 
-export function DocumentPicker({ chatId, onClose }: { chatId: string; onClose: () => void }) {
+export function DocumentPicker({ conversationId, onClose }: { conversationId: string; onClose: () => void }) {
   const qc = useQueryClient();
   const { data: docs = [] } = useQuery<Doc[]>({
     queryKey: ["documents"],
@@ -18,16 +18,16 @@ export function DocumentPicker({ chatId, onClose }: { chatId: string; onClose: (
     },
   });
   const { data: attached = [] } = useQuery<Doc[]>({
-    queryKey: ["chat-documents", chatId],
-    queryFn: () => getChatDocuments({ data: { chatId } }) as unknown as Promise<Doc[]>,
+    queryKey: ["conversation-documents", conversationId],
+    queryFn: () => getChatDocuments({ data: { conversationId } }) as unknown as Promise<Doc[]>,
   });
   const [selected, setSelected] = useState<Set<string>>(new Set());
   useEffect(() => { setSelected(new Set(attached.map((d) => d.id))); }, [attached]);
 
   const save = useMutation({
-    mutationFn: () => attachDocumentsToChat({ data: { chatId, documentIds: Array.from(selected) } }),
+    mutationFn: () => attachDocumentsToChat({ data: { conversationId, documentIds: Array.from(selected) } }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["chat-documents", chatId] });
+      qc.invalidateQueries({ queryKey: ["conversation-documents", conversationId] });
       toast.success("Attached");
       onClose();
     },

@@ -30,7 +30,7 @@ function ChatList() {
   const qc = useQueryClient();
   const [q, setQ] = useState("");
 
-  const { data: chats = [], isLoading } = useQuery({
+  const { data: conversations = [], isLoading } = useQuery({
     queryKey: ["conversations"],
     queryFn: async () => {
       const {
@@ -81,9 +81,9 @@ function ChatList() {
       });
 
       navigate({
-        to: "/chat/$chatId",
+        to: "/chat/$conversationId",
         params: {
-          chatId: conversation.id,
+          conversationId: conversation.id,
         },
       });
     },
@@ -113,10 +113,10 @@ function ChatList() {
   });
 
   const filtered = q
-    ? chats.filter((c) =>
+    ? conversations.filter((c) =>
         c.title?.toLowerCase().includes(q.toLowerCase())
       )
-    : chats;
+    : conversations;
 
   return (
     <div className="flex flex-col gap-4 px-4 pb-8 pt-5">
@@ -179,9 +179,9 @@ function ChatList() {
               className="flex items-center gap-2 px-3 py-2.5 transition-colors hover:bg-muted"
             >
               <Link
-                to="/chat/$chatId"
+                to="/chat/$conversationId"
                 params={{
-                  chatId: conversation.id,
+                  conversationId: conversation.id,
                 }}
                 className="flex min-w-0 flex-1 items-center gap-3"
               >
