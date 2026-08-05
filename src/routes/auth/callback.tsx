@@ -5,16 +5,6 @@ import { consumeAuthFromUrl } from "@/lib/auth-session";
 
 export const Route = createFileRoute("/auth/callback")({
   ssr: false,
-  head: () => ({
-    meta: [
-      { title: "Signing in — Floating Space" },
-      { name: "description", content: "Completing your secure Floating Space sign-in." },
-      { property: "og:title", content: "Signing in — Floating Space" },
-      { property: "og:description", content: "Completing your secure Floating Space sign-in." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
   component: AuthCallbackPage,
 });
 
@@ -27,21 +17,32 @@ function AuthCallbackPage() {
     const finish = (path: string) => {
       if (done) return;
       done = true;
+
       window.history.replaceState({}, "", "/auth/callback");
       window.location.replace(path);
     };
 
-    // Any session that arrives while we're on this page wins.
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) finish("/home");
-    });
+    const { data: sub } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        console.log("Auth event:", _event);
+        console.log("Auth session:", session);
+
+        if (session) {
+          finish("/home");
+        }
+      }
+    );
 
     const run = async () => {
       try {
         const url = new URL(window.location.href);
-        const hash = new URLSearchParams(url.hash.replace(/^#/, ""));
+        const hash = new URLSearchParams(
+          url.hash.replace(/^#/, "")
+        );
+
         const errorDescription =
-          url.searchParams.get("error_description") ?? hash.get("error_description");
+          url.searchParams.get("error_description") ??
+          hash.get("error_description");
 
         if (errorDescription) {
           setMessage(errorDescription);
@@ -49,35 +50,60 @@ function AuthCallbackPage() {
           return;
         }
 
-        // Handles both the hash (#access_token) and PKCE (?code=) flows.
+        // Consume OAuth tokens
         const authed = await consumeAuthFromUrl();
-        if (authed) {
-          finish("/home");
-          return;
-        }
-        // Give Supabase a brief moment to hydrate/emit before giving up.
-        setTimeout(async () => {
-          const { data } = await supabase.auth.getSession();
-          finish(data.session ? "/home" : "/auth");
-        }, 800);
-      } catch (err) {
-        console.error("[auth/callback]", err);
+
+        console.log("authed =", authed);
+
         const {
           data: { session },
         } = await supabase.auth.getSession();
+
+        console.log("session =", session);
+
+        if (authed && session) {
+          finish("/home");
+          return;
+        }
+
+        setTimeout(async () => {
+          const retry = await supabase.auth.getSession();
+
+          console.log(
+            "retry session =",
+            retry.data.session
+          );
+
+          finish(
+            retry.data.session ? "/home" : "/auth"
+          );
+        }, 1000);
+      } catch (err) {
+        console.error("[auth/callback]", err);
+
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        console.log("catch session =", session);
+
         finish(session ? "/home" : "/auth");
       }
     };
 
     void run();
 
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mb-4"></div>
-      <p className="text-sm text-gray-400">{message}</p>
+      <p className="text-sm text-gray-400">
+        {message}
+      </p>
     </div>
   );
 }
