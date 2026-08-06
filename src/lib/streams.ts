@@ -7,8 +7,8 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const SUPABASE_KEY =
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
-// Edge Function (deployed name: "chat")
-const CHAT_FN_URL = `${SUPABASE_URL}/functions/v1/chat`;
+// Edge Function (deployed name: "ai-chat")
+const CHAT_FN_URL = `${SUPABASE_URL}/functions/v1/ai-chat`;
 
 const REQUEST_TIMEOUT_MS = 30_000;
 
@@ -34,16 +34,32 @@ async function edgeFetch(
     throw new Error("You need to be signed in.");
   }
 
-  const res = await fetch(CHAT_FN_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(body),
-    signal: withTimeout(signal),
-  });
+  console.log("[AI] request", CHAT_FN_URL);
+
+  let res: Response;
+
+  try {
+    res = await fetch(CHAT_FN_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+      signal: withTimeout(signal),
+    });
+  } catch (err) {
+    const e = err as Error;
+    console.error("[AI] error", e);
+    if (e.name === "TimeoutError") {
+      throw new Error("The AI service took too long to respond (30s). Please try again.");
+    }
+    if (e.name === "AbortError") throw e;
+    throw new Error(
+      "Could not reach the AI service. Check your connection and try again."
+    );
+  }
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -57,8 +73,11 @@ async function edgeFetch(
       }
     } catch {}
 
+    console.error("[AI] error", res.status, message);
     throw new Error(message);
   }
+
+  console.log("[AI] response", res.status);
 
   return res;
 }
