@@ -172,6 +172,7 @@ Deno.serve(async (req: Request) => {
 
     const body = await req.json();
     const kind: "chat" | "image" = body?.kind === "image" ? "image" : "chat";
+    console.log(`[AI] request kind=${kind} user=${userId} mode=${body?.mode ?? "standard"}`);
 
     // ---------------- Image generation ----------------
     if (kind === "image") {
@@ -184,6 +185,7 @@ Deno.serve(async (req: Request) => {
         IMAGE_MODELS,
       );
       const payload = await res.json();
+      console.log("[AI] response image ok");
       const message = payload?.choices?.[0]?.message ?? {};
       const dataUrl: string | undefined =
         message?.images?.[0]?.image_url?.url ?? message?.images?.[0]?.url;
@@ -256,6 +258,7 @@ Deno.serve(async (req: Request) => {
     );
     if (!upstream.body) return json({ error: "Empty upstream response" }, 502);
 
+    console.log(`[AI] response stream open mode=${mode} models=${models.join(",")}`);
     return new Response(upstream.body, {
       headers: {
         ...corsHeaders,
