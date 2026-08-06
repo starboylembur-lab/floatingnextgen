@@ -1,5 +1,5 @@
 // Client transport for AI requests.
-// Every AI call goes: client → Supabase Edge Function "ai-chat" → OpenRouter.
+// Every AI call goes: client → Supabase Edge Function "chat" → OpenRouter.
 
 import { supabase } from "@/integrations/supabase/client";
 
@@ -7,8 +7,8 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const SUPABASE_KEY =
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
-// Edge Function
-const CHAT_FN_URL = `${SUPABASE_URL}/functions/v1/ai-chat`;
+// Edge Function (deployed name: "chat")
+const CHAT_FN_URL = `${SUPABASE_URL}/functions/v1/chat`;
 
 const REQUEST_TIMEOUT_MS = 30_000;
 
