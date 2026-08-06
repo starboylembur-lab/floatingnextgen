@@ -111,7 +111,7 @@ async function callOpenRouter(
         });
         if (res.ok) return res;
         const text = await res.text().catch(() => "");
-        console.error(`[chat] upstream ${res.status} on ${model}: ${text.slice(0, 300)}`);
+        console.error(`[AI] upstream ${res.status} on ${model}: ${text.slice(0, 300)}`);
         lastError = new UpstreamError(res.status, messageForStatus(res.status, text));
         // 401/402 are terminal — never retry, never try another model.
         if (res.status === 401 || res.status === 402) throw lastError;
@@ -124,7 +124,7 @@ async function callOpenRouter(
         if (err instanceof UpstreamError) throw err;
         const e = err as Error;
         const timedOut = e.name === "TimeoutError" || e.name === "AbortError";
-        console.error(`[chat] ${timedOut ? "timeout" : "network error"} on ${model}: ${e.message}`);
+        console.error(`[AI] ${timedOut ? "timeout" : "network error"} on ${model}: ${e.message}`);
         lastError = new UpstreamError(
           timedOut ? 504 : 502,
           timedOut
@@ -145,7 +145,7 @@ Deno.serve(async (req: Request) => {
   try {
     const apiKey = Deno.env.get("OPENROUTER_API_KEY")?.trim();
     if (!validateApiKey(apiKey)) {
-      console.error("[chat] OPENROUTER_API_KEY is missing or malformed");
+      console.error("[AI] OPENROUTER_API_KEY is missing or malformed");
       return json(
         {
           error:
@@ -188,7 +188,7 @@ Deno.serve(async (req: Request) => {
       const dataUrl: string | undefined =
         message?.images?.[0]?.image_url?.url ?? message?.images?.[0]?.url;
       if (!dataUrl || !dataUrl.startsWith("data:")) {
-        console.error("[chat] image response had no image", JSON.stringify(payload).slice(0, 500));
+        console.error("[AI] image response had no image", JSON.stringify(payload).slice(0, 500));
         return json({ error: "The image model did not return an image. Please try again." }, 502);
       }
 
@@ -203,14 +203,14 @@ Deno.serve(async (req: Request) => {
         .from("generated-images")
         .upload(path, bin, { contentType, upsert: false });
       if (upErr) {
-        console.error("[chat] storage upload failed", upErr.message);
+        console.error("[AI] storage upload failed", upErr.message);
         return json({ url: dataUrl, path: null, expiresIn: 0 });
       }
       const { data: signed, error: signErr } = await admin.storage
         .from("generated-images")
         .createSignedUrl(path, 60 * 60 * 24);
       if (signErr || !signed) {
-        console.error("[chat] signed url failed", signErr?.message);
+        console.error("[AI] signed url failed", signErr?.message);
         return json({ url: dataUrl, path, expiresIn: 0 });
       }
       return json({ url: signed.signedUrl, path, expiresIn: 60 * 60 * 24 });
@@ -266,10 +266,10 @@ Deno.serve(async (req: Request) => {
     });
   } catch (err) {
     if (err instanceof UpstreamError) {
-      console.error(`[chat] upstream failure ${err.status}: ${err.message}`);
+      console.error(`[AI] upstream failure ${err.status}: ${err.message}`);
       return json({ error: err.message, status: err.status }, err.status === 401 ? 502 : err.status);
     }
-    console.error("[chat] fatal", (err as Error).message);
+    console.error("[AI] fatal", (err as Error).message);
     return json({ error: (err as Error).message || "Unexpected error" }, 500);
   }
 });
